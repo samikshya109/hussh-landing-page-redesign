@@ -1,5 +1,14 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>hussh Redesign Case Study</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Case study: redesigning the hussh landing page, from heuristic audit to a responsive, accessible build.">
+<meta property="og:title" content="hussh Redesign Case Study">
+<meta property="og:description" content="From heuristic audit to a responsive, accessible landing page for a privacy-first personal AI.">
+<meta property="og:image" content="images/top-built.webp">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=Hanken+Grotesk:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=IBM+Plex+Mono:wght@500&display=swap">
@@ -28,6 +37,9 @@
   --ai:#9DB4EE;--ai-bg:#1D2640;--shadow:0 1px 0 rgba(0,0,0,.3),0 16px 40px -20px rgba(0,0,0,.8);color-scheme:dark}
 
 *{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html{scroll-behavior:smooth;scroll-padding-top:24px}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
 body{background:var(--paper);color:var(--ink);font:400 17px/1.6 var(--f-body);-webkit-font-smoothing:antialiased}
@@ -339,6 +351,8 @@ dialog.lb .in img{margin:0 auto}
 dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));right:calc(14px + env(safe-area-inset-right,0px));font:500 12px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;background:#fff;color:#151517;border:0;border-radius:999px;padding:10px 16px;cursor:pointer}
 .zoom{cursor:zoom-in}
 </style>
+</head>
+<body>
 
 <div class="shell">
   <aside class="rail" aria-label="Case study sections">
@@ -369,12 +383,12 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
       <h1>Making private AI <span class="redact"><mark>obvious.</mark></span></h1>
       <p class="lede">hussh asks people to trust a new kind of product: an AI assistant that runs on their own device. The current homepage sells the philosophy before the product. This case study follows the redesign from audit to a live, responsive, accessible page.</p>
       <div class="cover-actions">
-        <a class="btn" href="https://brand-reborn--6k11q143.preview.emergentagent.com" target="_blank" rel="noopener">View the live prototype ↗</a>
+        <a class="btn" href="https://hussh-prototype-vercel.vercel.app/" target="_blank" rel="noopener">View the live prototype ↗</a>
         <a class="btn alt" href="#final">Jump to before &amp; after</a>
       </div>
       <div class="showcase">
-        <div class="browser"><div class="bar"><i></i><i></i><i></i><span>hussh · desktop 1440</span></div><img src="img/d-01-hero.webp" width="2400" height="1500" alt="Redesigned hussh hero on desktop: Private AI that lives with you, not in the cloud."></div>
-        <div class="phone"><img src="img/m-01-hero.webp" width="780" height="2842" alt="The same hero on a 390px phone"></div>
+        <div class="browser"><div class="bar"><i></i><i></i><i></i><span>hussh · desktop 1440</span></div><img src="images/d-01-hero.webp" width="2400" height="1500" alt="Redesigned hussh hero on desktop: Private AI that lives with you, not in the cloud."></div>
+        <div class="phone"><img src="images/m-01-hero.webp" width="780" height="2842" alt="The same hero on a 390px phone"></div>
       </div>
       <dl class="meta">
         <div><dt class="mono">Role</dt><dd>Product designer, end to end</dd></div>
@@ -416,7 +430,7 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
       </div>
 
       <div class="audit-block" data-group>
-        <div class="pinwrap"><img class="zoom" src="img/cur-hero.webp" width="1470" height="830" alt="Current hero and navigation">
+        <div class="pinwrap"><img class="zoom" src="images/cur-hero.webp" width="1470" height="830" alt="Current hero and navigation">
           <button class="pin med" style="--x:50%;--y:4%" data-f="1">1</button><button class="pin" style="--x:58%;--y:36%" data-f="2">2</button><button class="pin med" style="--x:37%;--y:62%" data-f="3">3</button><button class="pin med" style="--x:50%;--y:88%" data-f="4">4</button></div>
         <div><h3>Navigation &amp; hero</h3><ul class="findings">
           <li data-f="1"><span class="n med">1</span><div><h4>Seven menus before one product <span class="chip med">Med</span></h4><p>Seven top-level items, five dropdowns, plus search, account and a CTA. Visitors meet the org chart first.</p></div></li>
@@ -426,7 +440,7 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
         </ul></div>
       </div>
       <div class="audit-block" data-group>
-        <div class="pinwrap"><img class="zoom" src="img/cur-products.webp" width="1470" height="770" alt="Current product cards">
+        <div class="pinwrap"><img class="zoom" src="images/cur-products.webp" width="1470" height="770" alt="Current product cards">
           <button class="pin" style="--x:83%;--y:40%" data-f="5">5</button><button class="pin" style="--x:77%;--y:30%" data-f="6">6</button><button class="pin low" style="--x:25%;--y:84%" data-f="7">7</button><button class="pin low" style="--x:79%;--y:60%" data-f="8">8</button></div>
         <div><h3>Product cards</h3><ul class="findings">
           <li data-f="5"><span class="n">5</span><div><h4>Three products, three levels of care <span class="chip high">High</span></h4><p>A detailed phone mock for Agent One, a 48px emoji for Puppy One, a stamp for Tag One. Hardware looks unfinished.</p></div></li>
@@ -436,7 +450,7 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
         </ul></div>
       </div>
       <div class="audit-block" data-group>
-        <div class="pinwrap"><img class="zoom" src="img/cur-how.webp" width="1470" height="767" alt="Current How it works section">
+        <div class="pinwrap"><img class="zoom" src="images/cur-how.webp" width="1470" height="767" alt="Current How it works section">
           <button class="pin med" style="--x:31%;--y:53%" data-f="9">9</button><button class="pin med" style="--x:77%;--y:40%" data-f="10">10</button><button class="pin low" style="--x:24%;--y:12%" data-f="11">11</button></div>
         <div><h3>How it works</h3><ul class="findings">
           <li data-f="9"><span class="n med">9</span><div><h4>Steps 2 and 3 look disabled <span class="chip med">Med</span></h4><p>Only step 1 is styled active, so the others read as unavailable.</p></div></li>
@@ -445,7 +459,7 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
         </ul></div>
       </div>
       <div class="audit-block" data-group>
-        <div class="pinwrap"><img class="zoom" src="img/cur-market.webp" width="1470" height="768" alt="Current marketplace section">
+        <div class="pinwrap"><img class="zoom" src="images/cur-market.webp" width="1470" height="768" alt="Current marketplace section">
           <button class="pin low" style="--x:74%;--y:18%" data-f="12">12</button><button class="pin med" style="--x:38%;--y:83%" data-f="13">13</button><button class="pin" style="--x:50%;--y:76%" data-f="14">14</button></div>
         <div><h3>Information marketplace</h3><ul class="findings">
           <li data-f="12"><span class="n low">12</span><div><h4>Layout grammar switches <span class="chip low">Low</span></h4><p>Everything above is left-aligned; this section is centered and oversized.</p></div></li>
@@ -454,7 +468,7 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
         </ul></div>
       </div>
       <div class="audit-block" data-group>
-        <div class="pinwrap"><img class="zoom" src="img/cur-eco.webp" width="1470" height="766" alt="Current AI ecosystem band">
+        <div class="pinwrap"><img class="zoom" src="images/cur-eco.webp" width="1470" height="766" alt="Current AI ecosystem band">
           <button class="pin med" style="--x:50%;--y:22%" data-f="15">15</button><button class="pin med" style="--x:72%;--y:41%" data-f="16">16</button><button class="pin" style="--x:50%;--y:85%" data-f="17">17</button></div>
         <div><h3>AI ecosystem band</h3><ul class="findings">
           <li data-f="15"><span class="n med">15</span><div><h4>770px for one sentence <span class="chip med">Med</span></h4><p>A heading, a sentence and seven chips in a mostly empty band.</p></div></li>
@@ -463,7 +477,7 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
         </ul></div>
       </div>
       <div class="audit-block" data-group>
-        <div class="pinwrap"><img class="zoom" src="img/cur-footer.webp" width="1470" height="765" alt="Current footer">
+        <div class="pinwrap"><img class="zoom" src="images/cur-footer.webp" width="1470" height="765" alt="Current footer">
           <button class="pin low" style="--x:50%;--y:12%" data-f="18">18</button><button class="pin med" style="--x:5%;--y:66%" data-f="19">19</button><button class="pin low" style="--x:95%;--y:47%" data-f="20">20</button></div>
         <div><h3>Footer</h3><ul class="findings">
           <li data-f="18"><span class="n low">18</span><div><h4>No logo, 37 links, a white gap <span class="chip low">Low</span></h4><p>Six columns with no brand mark.</p></div></li>
@@ -575,14 +589,14 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
         <p class="lede">Each direction answers one question differently: <strong>what does a skeptical visitor need to see first?</strong> I wireframed each in grayscale, then took it to full fidelity.</p>
       </div>
       <div class="lineup">
-        <figure><img src="img/top-current.webp" width="1200" height="960" alt="Current hero" class="zoom" loading="lazy"><figcaption><b>Current</b>Dark, abstract</figcaption></figure>
-        <figure><img src="img/top-refine.webp" width="1200" height="960" alt="Direction A hero" data-open="#i-hf-refine" loading="lazy"><figcaption><b>A · Refine</b>Sharper, same order</figcaption></figure>
-        <figure><img src="img/top-story.webp" width="1200" height="959" alt="Direction B hero" data-open="#i-hf-story" loading="lazy"><figcaption><b>B · Story</b>Problem first</figcaption></figure>
-        <figure><img src="img/top-tour.webp" width="1200" height="960" alt="Direction C hero" data-open="#i-hf-tour" loading="lazy"><figcaption><b>C · Tour</b>Category first</figcaption></figure>
-        <figure><img src="img/top-manifesto.webp" width="1200" height="960" alt="Direction D hero" data-open="#i-hf-manifesto" loading="lazy"><figcaption><b>D · Manifesto</b>Editorial</figcaption></figure>
-        <figure><img src="img/top-blend.webp" width="1200" height="960" alt="Direction E hero" data-open="#i-hf-blend" loading="lazy"><figcaption><b>E · Blend</b>Tour, dark mood</figcaption></figure>
-        <figure><img src="img/top-final.webp" width="1200" height="960" alt="Converged concept hero" data-open="#i-concept" loading="lazy"><figcaption><b>Concept</b>Light blend</figcaption></figure>
-        <figure class="pick"><img src="img/top-built.webp" width="1200" height="960" alt="Built final hero" data-open="#i-built" loading="lazy"><figcaption><b>Built final</b>Shipped design</figcaption></figure>
+        <figure><img src="images/top-current.webp" width="1200" height="960" alt="Current hero" class="zoom" loading="lazy"><figcaption><b>Current</b>Dark, abstract</figcaption></figure>
+        <figure><img src="images/top-refine.webp" width="1200" height="960" alt="Direction A hero" data-open="#i-hf-refine" loading="lazy"><figcaption><b>A · Refine</b>Sharper, same order</figcaption></figure>
+        <figure><img src="images/top-story.webp" width="1200" height="959" alt="Direction B hero" data-open="#i-hf-story" loading="lazy"><figcaption><b>B · Story</b>Problem first</figcaption></figure>
+        <figure><img src="images/top-tour.webp" width="1200" height="960" alt="Direction C hero" data-open="#i-hf-tour" loading="lazy"><figcaption><b>C · Tour</b>Category first</figcaption></figure>
+        <figure><img src="images/top-manifesto.webp" width="1200" height="960" alt="Direction D hero" data-open="#i-hf-manifesto" loading="lazy"><figcaption><b>D · Manifesto</b>Editorial</figcaption></figure>
+        <figure><img src="images/top-blend.webp" width="1200" height="960" alt="Direction E hero" data-open="#i-hf-blend" loading="lazy"><figcaption><b>E · Blend</b>Tour, dark mood</figcaption></figure>
+        <figure><img src="images/top-final.webp" width="1200" height="960" alt="Converged concept hero" data-open="#i-concept" loading="lazy"><figcaption><b>Concept</b>Light blend</figcaption></figure>
+        <figure class="pick"><img src="images/top-built.webp" width="1200" height="960" alt="Built final hero" data-open="#i-built" loading="lazy"><figcaption><b>Built final</b>Shipped design</figcaption></figure>
       </div>
 
       <div class="sub">
@@ -596,7 +610,7 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
           </div>
           <div class="panel" role="tabpanel" id="dir-a">
             <div><div class="tabs" role="group" aria-label="Fidelity"><button type="button" class="fid" aria-pressed="true" data-show="0">Visual</button><button type="button" class="fid" aria-pressed="false" data-show="1">Wireframe</button></div>
-              <div class="frame"><img id="i-hf-refine" src="img/hf-refine.webp" width="1969" height="8000" alt="Direction A visual" loading="lazy"><img src="img/wf-refine.webp" width="2000" height="5193" alt="Direction A wireframe" loading="lazy" hidden></div></div>
+              <div class="frame"><img id="i-hf-refine" src="images/hf-refine.webp" width="1969" height="8000" alt="Direction A visual" loading="lazy"><img src="images/wf-refine.webp" width="2000" height="5193" alt="Direction A wireframe" loading="lazy" hidden></div></div>
             <div class="rationale"><span class="mono">Bet: fix the current page, don't replace it</span><p class="hl">"Your AI. Your device. Nobody else."</p>
               <dl><div class="pro"><dt><h4>Strengths</h4></dt><dd><ul><li>Lowest risk; every section maps to one today</li><li>Bento makes Agent One twice the size of the hardware</li></ul></dd></div>
               <div class="con"><dt><h4>Tradeoffs</h4></dt><dd><ul><li>No proof section; privacy is asserted</li><li>The AI band stayed nearly empty</li></ul></dd></div></dl>
@@ -604,7 +618,7 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
           </div>
           <div class="panel" role="tabpanel" id="dir-b" hidden>
             <div><div class="tabs" role="group" aria-label="Fidelity"><button type="button" class="fid" aria-pressed="true" data-show="0">Visual</button><button type="button" class="fid" aria-pressed="false" data-show="1">Wireframe</button></div>
-              <div class="frame"><img id="i-hf-story" src="img/hf-story.webp" width="1297" height="8000" alt="Direction B visual" loading="lazy"><img src="img/wf-story.webp" width="2000" height="7319" alt="Direction B wireframe" loading="lazy" hidden></div></div>
+              <div class="frame"><img id="i-hf-story" src="images/hf-story.webp" width="1297" height="8000" alt="Direction B visual" loading="lazy"><img src="images/wf-story.webp" width="2000" height="7319" alt="Direction B wireframe" loading="lazy" hidden></div></div>
             <div class="rationale"><span class="mono">Bet: show the problem before the product</span><p class="hl">"Right now, your life lives on someone else's computer."</p>
               <dl><div class="pro"><dt><h4>Strengths</h4></dt><dd><ul><li>Strongest emotional case</li><li>"A day with Agent One" timeline is the most concrete product description</li></ul></dd></div>
               <div class="con"><dt><h4>Tradeoffs</h4></dt><dd><ul><li>11 sections; first product appears two screens down</li><li>The hero shows no product</li></ul></dd></div></dl>
@@ -612,7 +626,7 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
           </div>
           <div class="panel" role="tabpanel" id="dir-c" hidden>
             <div><div class="tabs" role="group" aria-label="Fidelity"><button type="button" class="fid" aria-pressed="true" data-show="0">Visual</button><button type="button" class="fid" aria-pressed="false" data-show="1">Wireframe</button></div>
-              <div class="frame"><img id="i-hf-tour" src="img/hf-tour.webp" width="1728" height="8000" alt="Direction C visual" loading="lazy"><img src="img/wf-tour.webp" width="2000" height="6920" alt="Direction C wireframe" loading="lazy" hidden></div></div>
+              <div class="frame"><img id="i-hf-tour" src="images/hf-tour.webp" width="1728" height="8000" alt="Direction C visual" loading="lazy"><img src="images/wf-tour.webp" width="2000" height="6920" alt="Direction C wireframe" loading="lazy" hidden></div></div>
             <div class="rationale"><span class="mono">Bet: a product tour with proof at every stop</span><p class="hl">"Private AI that lives with you, not in the cloud."</p>
               <dl><div class="pro"><dt><h4>Strengths</h4></dt><dd><ul><li>Clearest headline: category plus difference</li><li>Comparison table and marketplace demo make privacy concrete</li></ul></dd></div>
               <div class="con"><dt><h4>Tradeoffs</h4></dt><dd><ul><li>Tabs in "Pick your One" hide two of three products</li><li>The yellow closing card loses hussh's dark gravity</li></ul></dd></div></dl>
@@ -620,7 +634,7 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
           </div>
           <div class="panel" role="tabpanel" id="dir-d" hidden>
             <div><div class="tabs" role="group" aria-label="Fidelity"><button type="button" class="fid" aria-pressed="true" data-show="0">Visual</button><button type="button" class="fid" aria-pressed="false" data-show="1">Wireframe</button></div>
-              <div class="frame"><img id="i-hf-manifesto" src="img/hf-manifesto.webp" width="1770" height="8000" alt="Direction D visual" loading="lazy"><img src="img/wf-manifesto.webp" width="2000" height="6221" alt="Direction D wireframe" loading="lazy" hidden></div></div>
+              <div class="frame"><img id="i-hf-manifesto" src="images/hf-manifesto.webp" width="1770" height="8000" alt="Direction D visual" loading="lazy"><img src="images/wf-manifesto.webp" width="2000" height="6221" alt="Direction D wireframe" loading="lazy" hidden></div></div>
             <div class="rationale"><span class="mono">Bet: lead with conviction, like a magazine</span><p class="hl">"Shh. Your intelligence is personal property."</p>
               <dl><div class="pro"><dt><h4>Strengths</h4></dt><dd><ul><li>Most distinctive; stats strip makes proof scannable</li><li>The four-rings diagram explains the architecture</li></ul></dd></div>
               <div class="con"><dt><h4>Tradeoffs</h4></dt><dd><ul><li>"Shh." says nothing about the product</li><li>A serif display is a rebrand, outside the brief</li></ul></dd></div></dl>
@@ -628,7 +642,7 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
           </div>
           <div class="panel" role="tabpanel" id="dir-e" hidden>
             <div><div class="tabs" role="group" aria-label="Fidelity"><button type="button" class="fid" aria-pressed="true" data-show="0">Visual</button></div>
-              <div class="frame"><img id="i-hf-blend" src="img/hf-blend.webp" width="1845" height="8000" alt="Direction E visual" loading="lazy"></div></div>
+              <div class="frame"><img id="i-hf-blend" src="images/hf-blend.webp" width="1845" height="8000" alt="Direction E visual" loading="lazy"></div></div>
             <div class="rationale"><span class="mono">First convergence attempt</span><p class="hl">"Private AI that lives with you. Nobody else."</p>
               <dl><div class="pro"><dt><h4>Strengths</h4></dt><dd><ul><li>Proved Tour's structure survives a darker brand</li><li>Trust row under the CTAs</li></ul></dd></div>
               <div class="con"><dt><h4>Tradeoffs</h4></dt><dd><ul><li>Expanding gallery needs hover, which touch screens lack</li><li>Pastel renders on near-black look pasted on</li></ul></dd></div></dl>
@@ -721,27 +735,27 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
           <button role="tab" aria-selected="false" aria-controls="sw-7">Ending</button>
         </div>
         <div role="tabpanel" id="sw-1">
-          <div class="swipe" style="--pos:55%"><img src="img/b-01-hero.webp" width="1470" height="919" alt="Before: current hero"><div class="after"><img src="img/d-01-hero.webp" width="2400" height="1500" alt="After: redesigned hero"></div><input type="range" min="0" max="100" value="55" aria-label="Compare hero, before and after"><div class="handle"></div><span class="lbl a">After</span><span class="lbl b">Before</span></div>
+          <div class="swipe" style="--pos:55%"><img src="images/b-01-hero.webp" width="1470" height="919" alt="Before: current hero"><div class="after"><img src="images/d-01-hero.webp" width="2400" height="1500" alt="After: redesigned hero"></div><input type="range" min="0" max="100" value="55" aria-label="Compare hero, before and after"><div class="handle"></div><span class="lbl a">After</span><span class="lbl b">Before</span></div>
           <div class="swipe-notes"><div><span class="mono">Before</span><p>Belief-led headline, shop as the second action, proof in 13px.</p></div><div><span class="mono">After</span><p>Names the product category, highlights the benefit, puts proof above the headline and adds three color-coded product doors.</p></div></div>
         </div>
         <div role="tabpanel" id="sw-2" hidden>
-          <div class="swipe" style="--pos:55%"><img src="img/b-02-products.webp" width="1470" height="1191" alt="Before: current products"><div class="after"><img src="img/d-02-products.webp" width="2400" height="1945" alt="After: redesigned products"></div><input type="range" min="0" max="100" value="55" aria-label="Compare products, before and after"><div class="handle"></div><span class="lbl a">After</span><span class="lbl b">Before</span></div>
+          <div class="swipe" style="--pos:55%"><img src="images/b-02-products.webp" width="1470" height="1191" alt="Before: current products"><div class="after"><img src="images/d-02-products.webp" width="2400" height="1945" alt="After: redesigned products"></div><input type="range" min="0" max="100" value="55" aria-label="Compare products, before and after"><div class="handle"></div><span class="lbl a">After</span><span class="lbl b">Before</span></div>
           <div class="swipe-notes"><div><span class="mono">Before</span><p>A phone mock, a tiny emoji and a stamp. Unequal care, unclear lead.</p></div><div><span class="mono">After</span><p>Agent One takes two thirds with a real scene. Every product has its own render and the action that fits its status.</p></div></div>
         </div>
         <div role="tabpanel" id="sw-3" hidden>
-          <div class="swipe" style="--pos:55%"><img src="img/b-03-how-it-works.webp" width="1470" height="903" alt="Before: current how it works"><div class="after"><img src="img/d-03-how-it-works.webp" width="2400" height="1475" alt="After: redesigned how it works"></div><input type="range" min="0" max="100" value="55" aria-label="Compare how it works, before and after"><div class="handle"></div><span class="lbl a">After</span><span class="lbl b">Before</span></div>
+          <div class="swipe" style="--pos:55%"><img src="images/b-03-how-it-works.webp" width="1470" height="903" alt="Before: current how it works"><div class="after"><img src="images/d-03-how-it-works.webp" width="2400" height="1475" alt="After: redesigned how it works"></div><input type="range" min="0" max="100" value="55" aria-label="Compare how it works, before and after"><div class="handle"></div><span class="lbl a">After</span><span class="lbl b">Before</span></div>
           <div class="swipe-notes"><div><span class="mono">Before</span><p>Three steps, two look disabled, the visual stops at sign-in.</p></div><div><span class="mono">After</span><p>Four steps ending on the morning brief, a two-minute time promise, and a phone that shows the privacy promises.</p></div></div>
         </div>
         <div role="tabpanel" id="sw-5" hidden>
-          <div class="swipe" style="--pos:55%"><img src="img/b-05-marketplace.webp" width="1470" height="1262" alt="Before: current marketplace"><div class="after"><img src="img/d-05-marketplace.webp" width="2400" height="2060" alt="After: redesigned marketplace"></div><input type="range" min="0" max="100" value="55" aria-label="Compare marketplace, before and after"><div class="handle"></div><span class="lbl a">After</span><span class="lbl b">Before</span></div>
+          <div class="swipe" style="--pos:55%"><img src="images/b-05-marketplace.webp" width="1470" height="1262" alt="Before: current marketplace"><div class="after"><img src="images/d-05-marketplace.webp" width="2400" height="2060" alt="After: redesigned marketplace"></div><input type="range" min="0" max="100" value="55" aria-label="Compare marketplace, before and after"><div class="handle"></div><span class="lbl a">After</span><span class="lbl b">Before</span></div>
           <div class="swipe-notes"><div><span class="mono">Before</span><p>Four short claims, centered, ending in "Open your profile."</p></div><div><span class="mono">After</span><p>Four cards that show each step: what's shared, a $12 floor price, a request to approve, and earnings with a 0% fee.</p></div></div>
         </div>
         <div role="tabpanel" id="sw-6" hidden>
-          <div class="swipe" style="--pos:55%"><img src="img/b-06-ai-rings.webp" width="1470" height="1287" alt="Before: current AI ecosystem band"><div class="after"><img src="img/d-06-ai-rings.webp" width="2400" height="2102" alt="After: four rings diagram"></div><input type="range" min="0" max="100" value="55" aria-label="Compare AI ecosystem, before and after"><div class="handle"></div><span class="lbl a">After</span><span class="lbl b">Before</span></div>
+          <div class="swipe" style="--pos:55%"><img src="images/b-06-ai-rings.webp" width="1470" height="1287" alt="Before: current AI ecosystem band"><div class="after"><img src="images/d-06-ai-rings.webp" width="2400" height="2102" alt="After: four rings diagram"></div><input type="range" min="0" max="100" value="55" aria-label="Compare AI ecosystem, before and after"><div class="handle"></div><span class="lbl a">After</span><span class="lbl b">Before</span></div>
           <div class="swipe-notes"><div><span class="mono">Before</span><p>A mostly empty band with jargon and seven chips.</p></div><div><span class="mono">After</span><p>Four rings explain where the protection sits, with your AI tools outside and a plain-language list beside them.</p></div></div>
         </div>
         <div role="tabpanel" id="sw-7" hidden>
-          <div class="swipe" style="--pos:55%"><img src="img/b-07-closing-cta.webp" width="1470" height="624" alt="Before: page ends at footer"><div class="after"><img src="img/d-07-closing-cta.webp" width="2400" height="1018" alt="After: closing call to action"></div><input type="range" min="0" max="100" value="55" aria-label="Compare page ending, before and after"><div class="handle"></div><span class="lbl a">After</span><span class="lbl b">Before</span></div>
+          <div class="swipe" style="--pos:55%"><img src="images/b-07-closing-cta.webp" width="1470" height="624" alt="Before: page ends at footer"><div class="after"><img src="images/d-07-closing-cta.webp" width="2400" height="1018" alt="After: closing call to action"></div><input type="range" min="0" max="100" value="55" aria-label="Compare page ending, before and after"><div class="handle"></div><span class="lbl a">After</span><span class="lbl b">Before</span></div>
           <div class="swipe-notes"><div><span class="mono">Before</span><p>The page goes straight to the footer.</p></div><div><span class="mono">After</span><p>One clear closing ask with the email field, in a dark band that keeps hussh's original character.</p></div></div>
         </div>
       </div>
@@ -750,7 +764,7 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
       <div class="sub">
         <header><span class="mono">Annotated walkthrough</span><h3>The decisions behind the key sections</h3></header>
         <div class="anno" data-group>
-          <div class="pinwrap"><img class="zoom" src="img/d-01-hero.webp" width="2400" height="1500" alt="Redesigned hero">
+          <div class="pinwrap"><img class="zoom" src="images/d-01-hero.webp" width="2400" height="1500" alt="Redesigned hero">
             <button class="pin good" style="--x:31%;--y:23%" data-f="a">A</button><button class="pin good" style="--x:41%;--y:40%" data-f="b">B</button><button class="pin good" style="--x:40%;--y:71%" data-f="c">C</button><button class="pin good" style="--x:92%;--y:34%" data-f="d">D</button><button class="pin good" style="--x:50%;--y:93%" data-f="e">E</button></div>
           <div><h3>Hero</h3><ul class="findings">
             <li data-f="a"><span class="n good">A</span><div><h4>Proof replaces posture</h4><p>"On-device · Encrypted · Free for life" replaces "Sovereign intelligence." Fixes 2, 4.</p></div></li>
@@ -761,7 +775,7 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
           </ul></div>
         </div>
         <div class="anno" data-group>
-          <div class="pinwrap"><img class="zoom" src="img/d-04-comparison.webp" width="2400" height="1327" alt="hussh vs typical cloud AI comparison table">
+          <div class="pinwrap"><img class="zoom" src="images/d-04-comparison.webp" width="2400" height="1327" alt="hussh vs typical cloud AI comparison table">
             <button class="pin good" style="--x:60%;--y:20%" data-f="f">F</button><button class="pin good" style="--x:48%;--y:62%" data-f="g">G</button></div>
           <div><h3>Comparison (new)</h3><ul class="findings">
             <li data-f="f"><span class="n good">F</span><div><h4>Privacy as six checkable rows</h4><p>Where data lives, who reads it, training, ads, selling, price. A visitor can check each claim against what they know.</p></div></li>
@@ -769,7 +783,7 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
           </ul></div>
         </div>
         <div class="anno" data-group>
-          <div class="pinwrap"><img class="zoom" src="img/d-05-marketplace.webp" width="2400" height="2060" alt="Redesigned marketplace section">
+          <div class="pinwrap"><img class="zoom" src="images/d-05-marketplace.webp" width="2400" height="2060" alt="Redesigned marketplace section">
             <button class="pin good" style="--x:55%;--y:50%" data-f="h">H</button><button class="pin good" style="--x:92%;--y:41%" data-f="i">I</button><button class="pin good" style="--x:42%;--y:72%" data-f="j">J</button><button class="pin good" style="--x:47%;--y:90%" data-f="k">K</button></div>
           <div><h3>Marketplace</h3><ul class="findings">
             <li data-f="h"><span class="n good">H</span><div><h4>What's never shared is shown too</h4><p>"Messages and name: Never shared" answers the scary question before it's asked.</p></div></li>
@@ -804,20 +818,20 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
         <button type="button" aria-pressed="false" data-dev="mob">Mobile 390</button>
       </div>
       <div class="stage">
-        <div class="browser" id="dev-desk"><div class="bar"><i></i><i></i><i></i><span>hussh · full page · scroll inside</span></div><div class="scroll"><img id="i-built" src="img/d-full.webp" width="2400" height="12532" alt="Full redesigned page on desktop" loading="lazy"></div></div>
-        <div class="phone" id="dev-mob" hidden><div class="scroll"><img src="img/m-full.jpg" width="780" height="24646" alt="Full redesigned page on mobile" loading="lazy"></div></div>
+        <div class="browser" id="dev-desk"><div class="bar"><i></i><i></i><i></i><span>hussh · full page · scroll inside</span></div><div class="scroll"><img id="i-built" src="images/d-full.webp" width="2400" height="12532" alt="Full redesigned page on desktop" loading="lazy"></div></div>
+        <div class="phone" id="dev-mob" hidden><div class="scroll"><img src="images/m-full.jpg" width="780" height="24646" alt="Full redesigned page on mobile" loading="lazy"></div></div>
       </div>
       <div class="sub">
         <header><span class="mono">How each section adapts</span><p>Scroll inside each phone; swipe the row for more.</p></header>
         <div class="strip">
-          <figure><div class="phone"><div class="scroll"><img src="img/m-01-hero.webp" width="780" height="2842" alt="Mobile hero" loading="lazy"></div></div><figcaption><b>Nav &amp; hero</b>Five menus collapse to search and a menu button. Text and CTAs come first; the visual moves below; product doors stack.</figcaption></figure>
-          <figure><div class="phone"><div class="scroll"><img src="img/m-02-products.webp" width="780" height="3270" alt="Mobile products" loading="lazy"></div></div><figcaption><b>Products</b>The bento becomes one column with Agent One still first.</figcaption></figure>
-          <figure><div class="phone"><div class="scroll"><img src="img/m-03-how-it-works.webp" width="780" height="3032" alt="Mobile how it works" loading="lazy"></div></div><figcaption><b>How it works</b>Steps first, phone mock after, so the instructions aren't pushed below a picture.</figcaption></figure>
-          <figure><div class="phone"><div class="scroll"><img src="img/m-04-comparison.webp" width="780" height="2784" alt="Mobile comparison" loading="lazy"></div></div><figcaption><b>Comparison</b>The table becomes one card per question, hussh and cloud AI side by side. No sideways scrolling.</figcaption></figure>
-          <figure><div class="phone"><div class="scroll"><img src="img/m-05-marketplace.webp" width="780" height="4494" alt="Mobile marketplace" loading="lazy"></div></div><figcaption><b>Marketplace</b>Four cards stack in the order of the four steps.</figcaption></figure>
-          <figure><div class="phone"><div class="scroll"><img src="img/m-06-ai-rings.webp" width="780" height="3584" alt="Mobile AI rings" loading="lazy"></div></div><figcaption><b>Four rings</b>The diagram scales down; AI names move into a wrapping grid below it.</figcaption></figure>
-          <figure><div class="phone"><div class="scroll"><img src="img/m-07-closing-cta.webp" width="780" height="1686" alt="Mobile closing CTA" loading="lazy"></div></div><figcaption><b>Closing CTA</b>The email field and button stay on one line; the mascot follows.</figcaption></figure>
-          <figure><div class="phone"><div class="scroll"><img src="img/m-08-footer.webp" width="780" height="2968" alt="Mobile footer" loading="lazy"></div></div><figcaption><b>Footer</b>Six columns become two.</figcaption></figure>
+          <figure><div class="phone"><div class="scroll"><img src="images/m-01-hero.webp" width="780" height="2842" alt="Mobile hero" loading="lazy"></div></div><figcaption><b>Nav &amp; hero</b>Five menus collapse to search and a menu button. Text and CTAs come first; the visual moves below; product doors stack.</figcaption></figure>
+          <figure><div class="phone"><div class="scroll"><img src="images/m-02-products.webp" width="780" height="3270" alt="Mobile products" loading="lazy"></div></div><figcaption><b>Products</b>The bento becomes one column with Agent One still first.</figcaption></figure>
+          <figure><div class="phone"><div class="scroll"><img src="images/m-03-how-it-works.webp" width="780" height="3032" alt="Mobile how it works" loading="lazy"></div></div><figcaption><b>How it works</b>Steps first, phone mock after, so the instructions aren't pushed below a picture.</figcaption></figure>
+          <figure><div class="phone"><div class="scroll"><img src="images/m-04-comparison.webp" width="780" height="2784" alt="Mobile comparison" loading="lazy"></div></div><figcaption><b>Comparison</b>The table becomes one card per question, hussh and cloud AI side by side. No sideways scrolling.</figcaption></figure>
+          <figure><div class="phone"><div class="scroll"><img src="images/m-05-marketplace.webp" width="780" height="4494" alt="Mobile marketplace" loading="lazy"></div></div><figcaption><b>Marketplace</b>Four cards stack in the order of the four steps.</figcaption></figure>
+          <figure><div class="phone"><div class="scroll"><img src="images/m-06-ai-rings.webp" width="780" height="3584" alt="Mobile AI rings" loading="lazy"></div></div><figcaption><b>Four rings</b>The diagram scales down; AI names move into a wrapping grid below it.</figcaption></figure>
+          <figure><div class="phone"><div class="scroll"><img src="images/m-07-closing-cta.webp" width="780" height="1686" alt="Mobile closing CTA" loading="lazy"></div></div><figcaption><b>Closing CTA</b>The email field and button stay on one line; the mascot follows.</figcaption></figure>
+          <figure><div class="phone"><div class="scroll"><img src="images/m-08-footer.webp" width="780" height="2968" alt="Mobile footer" loading="lazy"></div></div><figcaption><b>Footer</b>Six columns become two.</figcaption></figure>
         </div>
       </div>
       <div class="sub">
@@ -972,14 +986,14 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
       <div class="closing">
         <span class="mono">In one sentence</span>
         <h3>A page that tells first-time visitors what hussh does, <mark>shows</mark> them why to trust it, and asks them once, clearly, to start.</h3>
-        <a class="btn" href="https://brand-reborn--6k11q143.preview.emergentagent.com" target="_blank" rel="noopener">Open the live prototype ↗</a>
+        <a class="btn" href="https://hussh-prototype-vercel.vercel.app/" target="_blank" rel="noopener">Open the live prototype ↗</a>
       </div>
       <div class="foot"><span>hussh landing page redesign · design assessment</span><span>Screens: current hussh.ai homepage, explorations and the built prototype</span></div>
     </section>
   </main>
 </div>
 
-<img id="i-concept" src="img/final.webp" width="1889" height="8000" alt="Converged concept, full page" hidden>
+<img id="i-concept" src="images/final.webp" width="1889" height="8000" alt="Converged concept, full page" hidden>
 <dialog class="lb" id="lb" aria-label="Full size image"><button type="button" id="lb-close">Close</button><div class="in"><img id="lb-img" alt=""></div></dialog>
 
 <script>
@@ -1041,3 +1055,6 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
   if('IntersectionObserver' in window){const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.remove('on'));const a=map.get(e.target.id);if(a)a.classList.add('on');}})},{rootMargin:'-40% 0px -55% 0px'});map.forEach((a,id)=>{const el=document.getElementById(id);if(el)io.observe(el);});}
 })();
 </script>
+
+</body>
+</html>
