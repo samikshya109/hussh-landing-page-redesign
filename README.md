@@ -2,8 +2,7 @@
 
 A UX/UI case study redesigning the landing page of hussh, a privacy-first personal AI. It covers the full process: a heuristic audit of the live page, problem framing, wireframes and visual explorations, the design decision, UX copy, the final responsive design and an accessibility review.
 
-**Case study:** [https://samikshya109.github.io/hussh-landing-page-redesign/](https://hussh-landing-page-redesign-i797.vercel.app/#final)
-
+**Case study:** https://hussh-landing-page-redesign-i797.vercel.app/#final
 **Live prototype:** https://hussh-prototype-vercel.vercel.app/
 
 ![Redesigned hussh hero on desktop and mobile](images/top-built.webp)
