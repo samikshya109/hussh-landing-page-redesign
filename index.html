@@ -1,0 +1,1043 @@
+<title>hussh Redesign Case Study</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=Hanken+Grotesk:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout concept: a case file. Sticky index rail, numbered files, evidence beside reasoning.
+   One accent: the hussh highlighter, used only to mark decisions. */
+:root{
+  --paper:#EEEEEA; --sheet:#FBFBF9; --ink:#151517; --muted:#5D5E64; --line:#D5D5CF;
+  --gold:#8A5C14; --mark:#FFE08A; --mark-ink:#151517;
+  --high:#B4322A; --med:#A26A10; --low:#2F6B4C;
+  --high-bg:#F6DEDB; --med-bg:#F4E6CC; --low-bg:#DCEBE2;
+  --ai:#3B5BA9; --ai-bg:#DFE6F5;
+  --shadow:0 1px 0 rgba(21,21,23,.04),0 12px 32px -18px rgba(21,21,23,.28);
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Hanken Grotesk","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --f-hussh:"Plus Jakarta Sans","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#111113;--sheet:#1A1A1D;--ink:#ECECE8;--muted:#A2A2A8;--line:#2E2E33;--gold:#E8B56B;
+  --mark:#E8B56B;--high:#F08A80;--med:#E9B95E;--low:#7DC39C;--high-bg:#3A1F1C;--med-bg:#382C17;--low-bg:#1C3226;
+  --ai:#9DB4EE;--ai-bg:#1D2640;--shadow:0 1px 0 rgba(0,0,0,.3),0 16px 40px -20px rgba(0,0,0,.8);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#111113;--sheet:#1A1A1D;--ink:#ECECE8;--muted:#A2A2A8;--line:#2E2E33;--gold:#E8B56B;
+  --mark:#E8B56B;--high:#F08A80;--med:#E9B95E;--low:#7DC39C;--high-bg:#3A1F1C;--med-bg:#382C17;--low-bg:#1C3226;
+  --ai:#9DB4EE;--ai-bg:#1D2640;--shadow:0 1px 0 rgba(0,0,0,.3),0 16px 40px -20px rgba(0,0,0,.8);color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:24px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{background:var(--paper);color:var(--ink);font:400 17px/1.6 var(--f-body);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+img{max-width:100%;display:block;height:auto}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:4px}
+h1,h2,h3,h4{font-family:var(--f-display);font-weight:700;line-height:1.05;margin:0;text-wrap:balance;letter-spacing:-.02em}
+h4{font-family:var(--f-body);font-weight:600;letter-spacing:0;font-size:17px;line-height:1.3}
+h3{font-size:24px;font-variation-settings:"wdth" 106;letter-spacing:-.015em}
+p{margin:0}
+.mono{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+mark,.mk{background:linear-gradient(transparent 12%,var(--mark) 12%,var(--mark) 88%,transparent 88%);color:var(--mark-ink);padding:0 .12em;border-radius:2px}
+
+.shell{display:grid;grid-template-columns:1fr;max-width:1440px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+@media (min-width:1100px){.shell{grid-template-columns:200px minmax(0,1fr);gap:56px;padding-left:max(32px,env(safe-area-inset-left,0px));padding-right:max(32px,env(safe-area-inset-right,0px))}}
+.rail{display:none}
+@media (min-width:1100px){
+  .rail{display:block;position:sticky;top:env(safe-area-inset-top,0px);align-self:start;height:100vh;padding-block:40px;overflow-y:auto}
+  .rail .brand{font-family:var(--f-display);font-variation-settings:"wdth" 125;font-weight:800;font-size:15px}
+  .rail .brand small{display:block;font:500 11px/1.4 var(--f-mono);letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-top:4px}
+  .rail ol{list-style:none;margin:28px 0 0;padding:0;display:grid;gap:1px}
+  .rail a{display:grid;grid-template-columns:28px 1fr;align-items:baseline;text-decoration:none;color:var(--muted);font-size:14px;padding:5px 8px;border-radius:6px}
+  .rail a span{font:500 11px var(--f-mono)}
+  .rail a:hover{color:var(--ink);background:var(--sheet)}
+  .rail a.on{color:var(--ink);background:var(--sheet);box-shadow:inset 3px 0 0 var(--mark)}
+  .rail .theme{margin-top:24px}
+}
+.theme button{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;background:none;border:1px solid var(--line);color:var(--muted);padding:6px 10px;border-radius:999px;cursor:pointer}
+.theme button:hover{color:var(--ink)}
+main{min-width:0;padding-bottom:80px}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding-block:16px;border-bottom:1px solid var(--line)}
+.topbar b{font-family:var(--f-display);font-variation-settings:"wdth" 125;font-weight:800;font-size:14px}
+@media (min-width:1100px){.topbar{display:none}}
+
+.file{padding-block:80px 16px;border-top:1px solid var(--line)}
+.file-head{display:grid;gap:16px;margin-bottom:40px;max-width:860px}
+.file-tag{display:flex;gap:12px;align-items:center;color:var(--muted)}
+.file-tag b{font:500 12px var(--f-mono);color:var(--ink);background:var(--sheet);border:1px solid var(--line);border-radius:4px;padding:2px 7px}
+.file h2{font-size:clamp(30px,4.2vw,52px);font-variation-settings:"wdth" 112}
+.lede{font-size:clamp(17px,1.5vw,20px);color:var(--muted);max-width:66ch;line-height:1.55}
+.lede strong{color:var(--ink);font-weight:600}
+.sub{margin-top:56px;display:grid;gap:20px}
+.sub>header{display:grid;gap:8px;max-width:760px}
+.sub>header p{color:var(--muted)}
+.note{font-size:14px;color:var(--muted);border-left:2px solid var(--line);padding-left:14px;max-width:72ch}
+.cap{font-size:14px;color:var(--muted);margin-top:10px}
+
+.cover{padding-block:56px 40px;display:grid;gap:36px}
+.cover-top{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;color:var(--muted)}
+.cover h1{font-size:clamp(44px,8vw,112px);font-variation-settings:"wdth" 118;font-weight:800;letter-spacing:-.035em;line-height:.94;max-width:12ch}
+.redact{position:relative;display:inline-block;white-space:nowrap}
+.redact::after{content:"";position:absolute;inset:.08em -.06em;background:var(--ink);transform-origin:right;animation:unredact 1.1s cubic-bezier(.7,0,.2,1) .5s forwards}
+@keyframes unredact{to{transform:scaleX(0)}}
+.cover-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:8px;font:600 15px var(--f-body);text-decoration:none;padding:12px 18px;border-radius:999px;background:var(--ink);color:var(--paper);border:1px solid var(--ink)}
+.btn.alt{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn:hover{opacity:.9}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.meta div{background:var(--sheet);padding:14px 18px;display:grid;gap:4px;min-width:0}
+.meta dt{color:var(--muted)} .meta dd{margin:0;font-weight:500;font-size:15px}
+dl{margin:0}
+.showcase{position:relative;padding-bottom:40px;max-width:100%}
+.browser{border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--sheet);box-shadow:var(--shadow)}
+.browser .bar{display:flex;gap:6px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line)}
+.browser .bar i{width:9px;height:9px;border-radius:50%;background:var(--line);display:block}
+.browser .bar span{margin-left:10px;font:400 11px var(--f-mono);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phone{border-radius:34px;border:8px solid #1F1F22;background:#1F1F22;overflow:hidden;box-shadow:0 24px 50px -20px rgba(0,0,0,.5)}
+.showcase .phone{position:absolute;right:4%;bottom:0;width:min(23%,210px)}
+.trio{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px}
+.trio>div{display:grid;gap:8px;align-content:start;min-width:0}
+.trio .k{color:var(--gold)}
+.trio p{color:var(--muted)}
+
+.eco{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px}
+@media (max-width:760px){.eco{grid-template-columns:1fr}}
+.eco>div{border-radius:14px;padding:22px;display:grid;gap:8px;align-content:start;color:#1F1F22;min-width:0}
+.eco .a1{background:#FFE08A}.eco .p1{background:#A9CBEF}.eco .t1{background:#F9B8CF}
+.eco .pill{justify-self:start;font:600 10px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;background:rgba(31,31,34,.1);padding:3px 8px;border-radius:99px}
+.eco h3{font-family:var(--f-hussh);font-size:22px;letter-spacing:-.02em;font-variation-settings:normal}
+.eco .a1 h3{font-size:30px}
+.eco p{color:#2f3035;font-size:15px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;margin-top:20px}
+.facts>div{border-top:1px solid var(--line);padding-top:14px;display:grid;gap:6px;min-width:0}
+.facts p{color:var(--muted);font-size:15px}
+
+.sev-strip{display:flex;flex-wrap:wrap;gap:10px}
+.chip{display:inline-flex;align-items:center;gap:6px;font:500 11px/1 var(--f-mono);letter-spacing:.05em;text-transform:uppercase;padding:5px 8px;border-radius:4px;white-space:nowrap}
+.chip.high{background:var(--high-bg);color:var(--high)}.chip.med{background:var(--med-bg);color:var(--med)}.chip.low{background:var(--low-bg);color:var(--low)}
+.chip.neutral{background:var(--sheet);color:var(--muted);border:1px solid var(--line)}
+
+.audit-block{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:28px;align-items:start;padding-block:24px;border-top:1px dashed var(--line)}
+@media (max-width:900px){.audit-block{grid-template-columns:1fr}}
+.audit-block h3{margin-bottom:6px}
+.pinwrap{position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);background:var(--sheet)}
+.pin{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;border:2px solid #fff;background:#B4322A;color:#fff;font:600 12px var(--f-mono);display:grid;place-items:center;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.35);transition:transform .15s;padding:0}
+.pin.med{background:#A26A10}.pin.low{background:#2F6B4C}
+.pin.good{background:#1F1F22;border-color:#FFE08A;color:#FFE08A}
+.pin.hot,.pin:hover{transform:translate(-50%,-50%) scale(1.25);z-index:2}
+.findings{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.findings li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;padding:10px 12px;border-radius:8px}
+.findings li.hot{background:var(--sheet)}
+.findings .n{font:600 12px var(--f-mono);width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#fff;background:#B4322A}
+.findings .n.med{background:#A26A10}.findings .n.low{background:#2F6B4C}.findings .n.good{background:#1F1F22;color:#FFE08A;border:2px solid #FFE08A}
+.findings h4{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:4px}
+.findings p{color:var(--muted);font-size:15px}
+
+table{border-collapse:collapse;width:100%;font-size:15px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--sheet)}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums;font-family:var(--f-mono);font-size:14px;white-space:nowrap}
+.dot{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:4px;border:1px solid rgba(0,0,0,.15)}
+
+.themes{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.themes>div{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:8px;align-content:start;min-width:0}
+.themes p{color:var(--muted);font-size:15px}
+.themes .ids{font:500 12px var(--f-mono);color:var(--muted)}
+
+.hmw{font-family:var(--f-display);font-variation-settings:"wdth" 100;font-weight:600;font-size:clamp(22px,2.8vw,34px);line-height:1.2;letter-spacing:-.02em;max-width:30ch}
+.priorities{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));border-top:2px solid var(--ink)}
+.priorities>div{padding:18px 20px 18px 0;display:grid;gap:8px;align-content:start;min-width:0}
+.priorities .num{font:800 40px/1 var(--f-display);font-variation-settings:"wdth" 125;color:var(--gold)}
+.priorities p{color:var(--muted);font-size:15px}
+
+.tl{list-style:none;margin:0;padding:0;position:relative;display:grid}
+.tl::before{content:"";position:absolute;left:15px;top:8px;bottom:8px;width:2px;background:var(--line)}
+.tl>li{position:relative;display:grid;grid-template-columns:32px minmax(0,1fr);gap:20px;padding-bottom:28px}
+.tl .node{width:32px;height:32px;border-radius:50%;background:var(--ink);color:var(--paper);display:grid;place-items:center;font:600 12px var(--f-mono);position:relative;z-index:1}
+.tl .body{display:grid;gap:12px;min-width:0}
+.tl .head{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline}
+.tl .head h3{font-size:22px}
+.tl .out{font:500 11px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--gold)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:700px){.split{grid-template-columns:1fr}}
+.split>div{border-radius:10px;padding:14px 16px;display:grid;gap:6px;align-content:start;min-width:0;font-size:15px}
+.split .me{background:var(--sheet);border:1px solid var(--line)}
+.split .bot{background:var(--ai-bg);color:var(--ink)}
+.split .who{font:600 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase}
+.split .me .who{color:var(--ink)} .split .bot .who{color:var(--ai)}
+.split ul{margin:0;padding-left:18px;display:grid;gap:3px;color:var(--muted)}
+.split .bot ul{color:var(--ink)}
+.call{border-left:3px solid var(--mark);background:var(--sheet);padding:12px 16px;border-radius:0 10px 10px 0;font-size:15px}
+.call b{font:600 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:3px;color:var(--gold)}
+.rules3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.rules3>div{border-top:2px solid var(--ink);padding-top:12px;display:grid;gap:6px;align-content:start;min-width:0}
+.rules3 p{color:var(--muted);font-size:15px}
+.ia{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:760px){.ia{grid-template-columns:1fr}}
+.ia ol{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:5px}
+.ia li{display:grid;grid-template-columns:104px minmax(0,1fr);gap:12px;align-items:center;background:var(--sheet);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:15px}
+.ia li .job{font:500 11px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.ia li.new{border-color:var(--gold);box-shadow:inset 3px 0 0 var(--mark)}
+.ia li em{font-style:normal;color:var(--muted);font-size:13px;display:block}
+
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.tabs button{font:500 14px var(--f-body);background:var(--sheet);border:1px solid var(--line);color:var(--muted);padding:8px 14px;border-radius:999px;cursor:pointer}
+.tabs button[aria-selected="true"],.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.panel{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:32px;align-items:start}
+@media (max-width:900px){.panel{grid-template-columns:1fr}}
+.frame{height:600px;overflow-y:auto;border-radius:10px;border:1px solid var(--line);background:#6a6a6a;box-shadow:var(--shadow);overscroll-behavior:contain}
+.frame img{width:100%}
+.rationale{display:grid;gap:16px;min-width:0}
+.rationale .hl{font-family:var(--f-hussh);font-weight:700;font-size:21px;letter-spacing:-.02em;line-height:1.2}
+.rationale dl{display:grid;gap:12px}
+.rationale dd{margin:4px 0 0;color:var(--muted);font-size:15px}
+.rationale dd ul{margin:0;padding-left:18px;display:grid;gap:3px}
+.pro dt h4{color:var(--low)} .con dt h4{color:var(--high)}
+.verdict{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:12px 16px;font-size:15px}
+.verdict b{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;display:block;color:var(--muted);margin-bottom:3px}
+.lineup{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.lineup figure{margin:0;display:grid;gap:6px;min-width:0}
+.lineup img{border-radius:8px;border:1px solid var(--line);aspect-ratio:1.25;object-fit:cover;object-position:top;width:100%;cursor:zoom-in}
+.lineup figcaption{font-size:13px;color:var(--muted);line-height:1.35}
+.lineup figcaption b{color:var(--ink);font-weight:600;display:block}
+.lineup figure.pick img{outline:3px solid var(--mark);outline-offset:2px}
+
+.matrix th{vertical-align:bottom}
+.matrix input[type=range]{width:80px;accent-color:#C98A3E;display:block;margin:6px auto 0}
+.matrix .w{font:500 11px var(--f-mono);color:var(--gold);display:block;text-align:center}
+.matrix td.sc{text-align:center}
+.matrix th.c{text-align:center}
+.dots{display:inline-flex;gap:3px;vertical-align:middle}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--line);display:block}
+.dots i.f{background:var(--ink)}
+.matrix tr.lead td{background:color-mix(in srgb,var(--mark) 24%,transparent)}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;min-width:80px;flex:1}
+.bar span{display:block;height:100%;background:var(--ink);transition:width .3s}
+.matrix tr.synth td{border-top:2px solid var(--ink)}
+.synth-map{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.synth-map>div{border:1px solid var(--line);border-radius:10px;padding:16px;background:var(--sheet);display:grid;gap:6px;align-content:start;min-width:0}
+.synth-map .from{font:500 11px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--gold)}
+.synth-map p{font-size:14px;color:var(--muted)}
+.synth-map .drop{border-style:dashed;background:transparent}
+.synth-map .drop .from{color:var(--high)}
+
+.copy-row td:first-child{font-family:var(--f-hussh);font-weight:700;letter-spacing:-.01em;font-size:16px;min-width:230px}
+.ck{font:600 13px var(--f-mono)} .ck.y{color:var(--low)} .ck.n{color:var(--high)} .ck.p{color:var(--med)}
+.copy-row.pick td{background:color-mix(in srgb,var(--mark) 24%,transparent)}
+.cta-compare{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:760px){.cta-compare{grid-template-columns:1fr}}
+.cta-compare>div{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:12px;align-content:start;min-width:0}
+.lbls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.lbls span{font:600 13px var(--f-hussh);padding:7px 12px;border-radius:999px;border:1px solid #E2E1DC;background:#fff;color:#1F1F22}
+.lbls span.p{background:#1F1F22;color:#fff;border-color:#1F1F22}
+.lbls span.lnk{border:0;background:none;color:#0046DA;padding-inline:2px;text-decoration:underline}
+.lbls span.gl{border:0;background:none;color:var(--gold);padding-inline:2px;text-decoration:underline}
+.lbls span.g{background:#E8B56B;border-color:#E8B56B}
+.lbls em{font:500 11px var(--f-mono);font-style:normal;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;width:100%;margin-top:4px}
+.voice{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.voice>div{padding:16px;border-radius:10px;background:var(--sheet);border:1px solid var(--line);display:grid;gap:10px;align-content:start;min-width:0}
+.voice .x{font-size:15px;color:var(--muted);text-decoration:line-through;text-decoration-color:var(--high)}
+.voice .o{font-size:15px;font-weight:500}
+
+.swipe{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);background:var(--sheet)}
+.swipe img{width:100%;display:block}
+.swipe .after{position:absolute;inset:0;clip-path:inset(0 calc(100% - var(--pos,50%)) 0 0)}
+.swipe .after img{height:100%;object-fit:cover;object-position:top}
+.swipe .handle{position:absolute;top:0;bottom:0;left:var(--pos,50%);width:2px;background:#FFE08A;transform:translateX(-1px);pointer-events:none;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
+.swipe .handle::after{content:"⇆";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:42px;height:42px;border-radius:50%;background:#FFE08A;color:#1F1F22;display:grid;place-items:center;font-size:18px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.swipe input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:ew-resize;margin:0}
+.swipe input:focus-visible+.handle::after{outline:3px solid #1F1F22;outline-offset:2px}
+.swipe .lbl{position:absolute;top:12px;font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;padding:5px 9px;border-radius:4px;pointer-events:none}
+.swipe .lbl.a{left:12px;background:#FFE08A;color:#1F1F22}
+.swipe .lbl.b{right:12px;background:rgba(31,31,34,.82);color:#fff}
+.swipe-notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:14px}
+.swipe-notes div{display:grid;gap:4px;min-width:0}
+.swipe-notes p{color:var(--muted);font-size:15px}
+.swipe-notes .mono{color:var(--muted)}
+
+.anno{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:28px;align-items:start;padding-block:24px;border-top:1px dashed var(--line)}
+@media (max-width:900px){.anno{grid-template-columns:1fr}}
+.refine{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.refine>div{border:1px solid var(--line);border-radius:10px;padding:16px;background:var(--sheet);display:grid;gap:6px;align-content:start;min-width:0}
+.refine p{font-size:14px;color:var(--muted)}
+.refine .was s{text-decoration-color:var(--high)}
+
+.device-toggle{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--sheet);margin-bottom:16px}
+.device-toggle button{font:500 14px var(--f-body);border:0;background:none;color:var(--muted);padding:7px 16px;border-radius:999px;cursor:pointer}
+.device-toggle button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.stage{display:grid;place-items:center;background:color-mix(in srgb,var(--line) 45%,var(--paper));border-radius:14px;padding:clamp(14px,3vw,36px)}
+.stage .browser{width:100%}
+.stage .browser .scroll{height:min(620px,70vh);overflow-y:auto;overscroll-behavior:contain}
+.stage .phone{width:min(320px,86%)}
+.stage .phone .scroll{height:min(640px,72vh);overflow-y:auto;overscroll-behavior:contain;border-radius:26px;background:#fff}
+.strip{display:flex;gap:16px;overflow-x:auto;padding-bottom:12px;scroll-snap-type:x mandatory}
+.strip figure{flex:0 0 200px;margin:0;scroll-snap-align:start;display:grid;gap:8px;align-content:start}
+.strip .phone{border-width:6px;border-radius:24px}
+.strip .phone .scroll{height:380px;overflow-y:auto;border-radius:18px;background:#fff}
+.strip figcaption{font-size:13px;color:var(--muted);line-height:1.4}
+.strip figcaption b{display:block;color:var(--ink);font-weight:600}
+
+.score{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.score>div{background:var(--sheet);padding:16px 18px;display:grid;gap:2px}
+.score b{font:800 34px/1.1 var(--f-display);font-variation-settings:"wdth" 115;font-variant-numeric:tabular-nums}
+.score span{font-size:14px;color:var(--muted)}
+.wcag td:first-child{white-space:nowrap;font:500 13px var(--f-mono)}
+.wcag td:nth-child(2){font-weight:600;white-space:nowrap}
+.wcag td:nth-child(3){color:var(--muted);min-width:280px}
+.st{font:600 11px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;padding:4px 7px;border-radius:4px;white-space:nowrap}
+.st.pass{background:var(--low-bg);color:var(--low)}.st.part{background:var(--med-bg);color:var(--med)}.st.todo{background:var(--sheet);color:var(--muted);border:1px solid var(--line)}
+
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.sw{border-radius:10px;overflow:hidden;border:1px solid var(--line);background:var(--sheet)}
+.sw .c{height:64px}
+.sw div:last-child{padding:9px 11px;display:grid;gap:1px}
+.sw b{font-size:14px;font-weight:600}
+.sw span{font:400 11px var(--f-mono);color:var(--muted)}
+.type-spec{display:grid;border-top:1px solid var(--line)}
+.type-spec>div{display:grid;grid-template-columns:170px minmax(0,1fr);gap:16px;align-items:baseline;padding:14px 0;border-bottom:1px solid var(--line)}
+@media (max-width:600px){.type-spec>div{grid-template-columns:1fr;gap:4px}}
+.type-spec .s{font:400 12px var(--f-mono);color:var(--muted)}
+.type-spec .t{font-family:var(--f-hussh);min-width:0;overflow-wrap:anywhere}
+.specimen{background:#FAF8F5;color:#1F1F22;border-radius:14px;padding:24px;display:grid;gap:20px;border:1px solid var(--line)}
+.specimen .row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.specimen .lbl{font:500 12px "IBM Plex Mono",var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:#5B5F68;width:100%}
+.hb{font:700 15px var(--f-hussh);border-radius:999px;padding:0 22px;min-height:44px;border:1px solid transparent;display:inline-flex;gap:8px;align-items:center;cursor:pointer}
+.hb.d{background:#1F1F22;color:#fff}
+.hb.s{background:#fff;color:#1F1F22;border-color:#E2E1DC}
+.hb.g{background:#E8B56B;color:#1F1F22}
+.hb:focus-visible{outline:2px solid #1F1F22;outline-offset:3px;box-shadow:0 0 0 5px #fff}
+.hchip{font:600 13px var(--f-hussh);background:#fff;border:1px solid #E7E5DF;border-radius:999px;padding:7px 13px;display:inline-flex;align-items:center;gap:6px}
+.qlink{display:flex;align-items:center;gap:10px;border-radius:16px;padding:14px 16px;min-width:190px;flex:1;font-family:var(--f-hussh)}
+.qlink b{font-size:15px;display:block}.qlink small{font-size:12px;color:#45474D}
+.qlink span:last-child{margin-left:auto}
+
+.trade{display:grid;border-top:1px solid var(--line)}
+.trade details{border-bottom:1px solid var(--line);padding:14px 0}
+.trade summary{cursor:pointer;list-style:none;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center}
+.trade summary::-webkit-details-marker{display:none}
+.trade .chev{font:500 14px var(--f-mono);color:var(--muted);transition:transform .2s}
+.trade details[open] .chev{transform:rotate(45deg)}
+.trade .body{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:12px}
+@media (max-width:760px){.trade .body{grid-template-columns:1fr}}
+.trade .body div{display:grid;gap:4px;align-content:start}
+.trade .body p{color:var(--muted);font-size:15px}
+.closing{margin-top:40px;background:#1F1F22;color:#FAF8F5;border-radius:16px;padding:clamp(28px,5vw,56px);display:grid;gap:16px}
+.closing h3{font-size:clamp(24px,3.2vw,38px);font-variation-settings:"wdth" 110}
+.closing mark{color:#1F1F22;background:linear-gradient(transparent 12%,#FFE08A 12%,#FFE08A 88%,transparent 88%)}
+.closing .mono{color:#FFE08A}
+.closing .btn{background:#FFE08A;color:#1F1F22;border-color:#FFE08A;justify-self:start}
+.foot{margin-top:48px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+
+dialog.lb{border:0;padding:0;background:transparent;max-width:min(1400px,96vw);width:100%;max-height:94vh}
+dialog.lb::backdrop{background:rgba(10,10,12,.85)}
+dialog.lb .in{max-height:90vh;overflow:auto;border-radius:10px;background:#222}
+dialog.lb .in img{margin:0 auto}
+dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));right:calc(14px + env(safe-area-inset-right,0px));font:500 12px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;background:#fff;color:#151517;border:0;border-radius:999px;padding:10px 16px;cursor:pointer}
+.zoom{cursor:zoom-in}
+</style>
+
+<div class="shell">
+  <aside class="rail" aria-label="Case study sections">
+    <div class="brand">hussh redesign<small>Landing page case study</small></div>
+    <ol id="toc">
+      <li><a href="#overview"><span>00</span>Overview</a></li>
+      <li><a href="#context"><span>01</span>Context</a></li>
+      <li><a href="#audit"><span>02</span>Audit</a></li>
+      <li><a href="#framing"><span>03</span>Framing</a></li>
+      <li><a href="#timeline"><span>04</span>Timeline &amp; AI</a></li>
+      <li><a href="#explore"><span>05</span>Explorations</a></li>
+      <li><a href="#decision"><span>06</span>Decision</a></li>
+      <li><a href="#copy"><span>07</span>UX copy</a></li>
+      <li><a href="#final"><span>08</span>Before &amp; after</a></li>
+      <li><a href="#responsive"><span>09</span>Responsive</a></li>
+      <li><a href="#a11y"><span>10</span>Accessibility</a></li>
+      <li><a href="#system"><span>11</span>Visual system</a></li>
+      <li><a href="#next"><span>12</span>Tradeoffs &amp; next</a></li>
+    </ol>
+    <div class="theme"><button type="button" class="theme-btn">Switch theme</button></div>
+  </aside>
+
+  <main>
+    <div class="topbar"><b>hussh redesign</b><span class="theme"><button type="button" class="theme-btn">Theme</button></span></div>
+
+    <section class="cover" id="overview">
+      <div class="cover-top mono"><span>UX/UI design challenge · hussh</span><span>Landing page redesign</span></div>
+      <h1>Making private AI <span class="redact"><mark>obvious.</mark></span></h1>
+      <p class="lede">hussh asks people to trust a new kind of product: an AI assistant that runs on their own device. The current homepage sells the philosophy before the product. This case study follows the redesign from audit to a live, responsive, accessible page.</p>
+      <div class="cover-actions">
+        <a class="btn" href="https://brand-reborn--6k11q143.preview.emergentagent.com" target="_blank" rel="noopener">View the live prototype ↗</a>
+        <a class="btn alt" href="#final">Jump to before &amp; after</a>
+      </div>
+      <div class="showcase">
+        <div class="browser"><div class="bar"><i></i><i></i><i></i><span>hussh · desktop 1440</span></div><img src="img/d-01-hero.webp" width="2400" height="1500" alt="Redesigned hussh hero on desktop: Private AI that lives with you, not in the cloud."></div>
+        <div class="phone"><img src="img/m-01-hero.webp" width="780" height="2842" alt="The same hero on a 390px phone"></div>
+      </div>
+      <dl class="meta">
+        <div><dt class="mono">Role</dt><dd>Product designer, end to end</dd></div>
+        <div><dt class="mono">Deliverables</dt><dd>Desktop 1440 + mobile 390, live build</dd></div>
+        <div><dt class="mono">Explored</dt><dd>4 wireframe and 5 visual directions</dd></div>
+        <div><dt class="mono">Standard</dt><dd>WCAG 2.2 AA, checked on the live page</dd></div>
+      </dl>
+      <div class="trio">
+        <div><span class="mono k">Problem</span><h3>Abstract promise, unclear product</h3><p>"Personal supercomputing, owned by you" doesn't say what Agent One does, how the three products relate, or where to start. The page ends without asking.</p></div>
+        <div><span class="mono k">Approach</span><h3>Audit, diverge, converge, build</h3><p>20 audit findings became three priorities. I explored widely with AI's help, scored every direction, and combined the strongest parts.</p></div>
+        <div><span class="mono k">Outcome</span><h3>Say what it is, then prove it</h3><p>A benefit-led hero, Agent One as the lead product, privacy shown through a comparison and a marketplace demo, one consistent call to action, 0 contrast failures.</p></div>
+      </div>
+    </section>
+
+    <section class="file" id="context">
+      <div class="file-head">
+        <div class="file-tag mono"><b>01</b> Context</div>
+        <h2>Personal AI built around ownership</h2>
+        <p class="lede">hussh's pitch is that your assistant should run on hardware you own, so your messages, money and files <strong>never sit on someone else's server</strong>. Three products carry it.</p>
+      </div>
+      <div class="eco">
+        <div class="a1"><span class="pill">Software · Free</span><h3>Agent One</h3><p>The private assistant: reads only what you connect and turns it into a morning brief, caught charges and drafted replies. Free and available today, so it's where every visitor should start.</p></div>
+        <div class="p1"><span class="pill">Hardware</span><h3>Puppy One</h3><p>A laptop or Apple Silicon Mac with Agent One preinstalled, for people who want it running all the time.</p></div>
+        <div class="t1"><span class="pill">Coming soon</span><h3>Tag One</h3><p>A consent-first wearable for a trusted circle. Not shipping yet, so the right action is a waitlist.</p></div>
+      </div>
+      <div class="facts">
+        <div><span class="mono">Visitor</span><h4>Curious, privacy-aware, not technical</h4><p>Uses ChatGPT or Siri, feels uneasy about where data goes, wants a reason to switch in seconds.</p></div>
+        <div><span class="mono">Business goal</span><h4>Agent One sign-ups</h4><p>The free app is the funnel; hardware and the marketplace grow from it.</p></div>
+        <div><span class="mono">Constraint</span><h4>Evolve, don't rebrand</h4><p>Keep the mascot, the gold and the product names. Fix clarity and consistency.</p></div>
+      </div>
+    </section>
+
+    <section class="file" id="audit">
+      <div class="file-head">
+        <div class="file-tag mono"><b>02</b> Heuristic audit of the live page</div>
+        <h2>A promising story held back by its presentation</h2>
+        <p class="lede">I reviewed the current homepage section by section against Nielsen's heuristics and basic conversion principles. <strong>20 findings</strong>, pinned where they happen. Hover a finding to find its pin.</p>
+        <div class="sev-strip"><span class="chip high">5 high</span><span class="chip med">9 medium</span><span class="chip low">6 low</span><span class="chip neutral">Expert review, not user testing</span></div>
+      </div>
+
+      <div class="audit-block" data-group>
+        <div class="pinwrap"><img class="zoom" src="img/cur-hero.webp" width="1470" height="830" alt="Current hero and navigation">
+          <button class="pin med" style="--x:50%;--y:4%" data-f="1">1</button><button class="pin" style="--x:58%;--y:36%" data-f="2">2</button><button class="pin med" style="--x:37%;--y:62%" data-f="3">3</button><button class="pin med" style="--x:50%;--y:88%" data-f="4">4</button></div>
+        <div><h3>Navigation &amp; hero</h3><ul class="findings">
+          <li data-f="1"><span class="n med">1</span><div><h4>Seven menus before one product <span class="chip med">Med</span></h4><p>Seven top-level items, five dropdowns, plus search, account and a CTA. Visitors meet the org chart first.</p></div></li>
+          <li data-f="2"><span class="n">2</span><div><h4>The headline doesn't say what it is <span class="chip high">High</span></h4><p>"Sovereign intelligence" and "Personal supercomputing" describe a belief. Nothing above the fold says it's an assistant for your mail, calendar and bills.</p></div></li>
+          <li data-f="3"><span class="n med">3</span><div><h4>The secondary CTA jumps ahead <span class="chip med">Med</span></h4><p>"hussh Shop" asks visitors to buy hardware before they know what it's for.</p></div></li>
+          <li data-f="4"><span class="n med">4</span><div><h4>Proof is the smallest text on screen <span class="chip med">Med</span></h4><p>On-device, encrypted and free sit in a 13px line, followed by about 200px of empty canvas.</p></div></li>
+        </ul></div>
+      </div>
+      <div class="audit-block" data-group>
+        <div class="pinwrap"><img class="zoom" src="img/cur-products.webp" width="1470" height="770" alt="Current product cards">
+          <button class="pin" style="--x:83%;--y:40%" data-f="5">5</button><button class="pin" style="--x:77%;--y:30%" data-f="6">6</button><button class="pin low" style="--x:25%;--y:84%" data-f="7">7</button><button class="pin low" style="--x:79%;--y:60%" data-f="8">8</button></div>
+        <div><h3>Product cards</h3><ul class="findings">
+          <li data-f="5"><span class="n">5</span><div><h4>Three products, three levels of care <span class="chip high">High</span></h4><p>A detailed phone mock for Agent One, a 48px emoji for Puppy One, a stamp for Tag One. Hardware looks unfinished.</p></div></li>
+          <li data-f="6"><span class="n">6</span><div><h4>What is Puppy One? <span class="chip high">High</span></h4><p>"A laptop, an Apple Silicon Mac, Dell or Acer, that comes preinstalled…" reads like a list of laptop brands.</p></div></li>
+          <li data-f="7"><span class="n low">7</span><div><h4>Off-palette links <span class="chip low">Low</span></h4><p>The only blue on the page, and arrows vary between →, › and ↗.</p></div></li>
+          <li data-f="8"><span class="n low">8</span><div><h4>"Data encrypted" on one card only <span class="chip low">Low</span></h4><p>Implies the other two products aren't encrypted.</p></div></li>
+        </ul></div>
+      </div>
+      <div class="audit-block" data-group>
+        <div class="pinwrap"><img class="zoom" src="img/cur-how.webp" width="1470" height="767" alt="Current How it works section">
+          <button class="pin med" style="--x:31%;--y:53%" data-f="9">9</button><button class="pin med" style="--x:77%;--y:40%" data-f="10">10</button><button class="pin low" style="--x:24%;--y:12%" data-f="11">11</button></div>
+        <div><h3>How it works</h3><ul class="findings">
+          <li data-f="9"><span class="n med">9</span><div><h4>Steps 2 and 3 look disabled <span class="chip med">Med</span></h4><p>Only step 1 is styled active, so the others read as unavailable.</p></div></li>
+          <li data-f="10"><span class="n med">10</span><div><h4>Shows the login, not the payoff <span class="chip med">Med</span></h4><p>The only visual is "Continue with Google / Apple." The morning brief never appears.</p></div></li>
+          <li data-f="11"><span class="n low">11</span><div><h4>Generic heading, dead space <span class="chip low">Low</span></h4><p>"How it works." promises nothing about time, effort or result.</p></div></li>
+        </ul></div>
+      </div>
+      <div class="audit-block" data-group>
+        <div class="pinwrap"><img class="zoom" src="img/cur-market.webp" width="1470" height="768" alt="Current marketplace section">
+          <button class="pin low" style="--x:74%;--y:18%" data-f="12">12</button><button class="pin med" style="--x:38%;--y:83%" data-f="13">13</button><button class="pin" style="--x:50%;--y:76%" data-f="14">14</button></div>
+        <div><h3>Information marketplace</h3><ul class="findings">
+          <li data-f="12"><span class="n low">12</span><div><h4>Layout grammar switches <span class="chip low">Low</span></h4><p>Everything above is left-aligned; this section is centered and oversized.</p></div></li>
+          <li data-f="13"><span class="n med">13</span><div><h4>"Open your profile": which profile? <span class="chip med">Med</span></h4><p>A third CTA label and a new link style. Visitors don't have a profile yet.</p></div></li>
+          <li data-f="14"><span class="n">14</span><div><h4>A new idea told in four short claims <span class="chip high">High</span></h4><p>Selling your own data on your terms is new. No example shows what a request looks like or what you'd earn.</p></div></li>
+        </ul></div>
+      </div>
+      <div class="audit-block" data-group>
+        <div class="pinwrap"><img class="zoom" src="img/cur-eco.webp" width="1470" height="766" alt="Current AI ecosystem band">
+          <button class="pin med" style="--x:50%;--y:22%" data-f="15">15</button><button class="pin med" style="--x:72%;--y:41%" data-f="16">16</button><button class="pin" style="--x:50%;--y:85%" data-f="17">17</button></div>
+        <div><h3>AI ecosystem band</h3><ul class="findings">
+          <li data-f="15"><span class="n med">15</span><div><h4>770px for one sentence <span class="chip med">Med</span></h4><p>A heading, a sentence and seven chips in a mostly empty band.</p></div></li>
+          <li data-f="16"><span class="n med">16</span><div><h4>Jargon and three spellings <span class="chip med">Med</span></h4><p>"Private cryptographic shield… global intelligence". The brand appears as hussh, Hussh and Hushh.</p></div></li>
+          <li data-f="17"><span class="n">17</span><div><h4>The page never closes <span class="chip high">High</span></h4><p>No final call to action. The last thing a convinced visitor sees is a trademark disclaimer.</p></div></li>
+        </ul></div>
+      </div>
+      <div class="audit-block" data-group>
+        <div class="pinwrap"><img class="zoom" src="img/cur-footer.webp" width="1470" height="765" alt="Current footer">
+          <button class="pin low" style="--x:50%;--y:12%" data-f="18">18</button><button class="pin med" style="--x:5%;--y:66%" data-f="19">19</button><button class="pin low" style="--x:95%;--y:47%" data-f="20">20</button></div>
+        <div><h3>Footer</h3><ul class="findings">
+          <li data-f="18"><span class="n low">18</span><div><h4>No logo, 37 links, a white gap <span class="chip low">Low</span></h4><p>Six columns with no brand mark.</p></div></li>
+          <li data-f="19"><span class="n med">19</span><div><h4>The best promise is in fine print <span class="chip med">Med</span></h4><p>"Free for every American citizen" sits in a gray legal paragraph.</p></div></li>
+          <li data-f="20"><span class="n low">20</span><div><h4>Unclear link labels <span class="chip low">Low</span></h4><p>"iMoney", "The 1024" and "Gratitude" don't say where they lead.</p></div></li>
+        </ul></div>
+      </div>
+
+      <div class="sub">
+        <header><span class="mono">Synthesis</span><h3>Four patterns behind the findings</h3></header>
+        <div class="themes">
+          <div><span class="ids">2 · 6 · 10 · 14 · 16</span><h4>The offer is abstract</h4><p>Beliefs instead of what Agent One does on a normal Tuesday.</p></div>
+          <div><span class="ids">4 · 5 · 9 · 15</span><h4>Weight doesn't match importance</h4><p>Space goes to slogans; proof and hardware get the least care.</p></div>
+          <div><span class="ids">3 · 7 · 8 · 12 · 13</span><h4>No shared system</h4><p>Different CTA labels, link colors, arrows and alignments.</p></div>
+          <div><span class="ids">1 · 3 · 13 · 17 · 19</span><h4>The path to "start" is broken</h4><p>Competing exits up top and no ask at the end.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="file" id="framing">
+      <div class="file-head">
+        <div class="file-tag mono"><b>03</b> Problem framing</div>
+        <h2>From complex messaging to a clear first visit</h2>
+      </div>
+      <p class="hmw">How might we help first-time visitors understand what private AI does for them, trust how hussh handles their data, and see one clear way to start?</p>
+      <div class="sub">
+        <div class="priorities">
+          <div><span class="num">01</span><h4>Say what it is, then prove it</h4><p>Lead with the benefit in plain words. Back every privacy claim with something visible.</p></div>
+          <div><span class="num">02</span><h4>Make Agent One the hero product</h4><p>One product leads; the hardware supports. Equal care for all three.</p></div>
+          <div><span class="num">03</span><h4>One system, one path</h4><p>One CTA per intent, one link style, one alignment logic. End with an ask.</p></div>
+        </div>
+      </div>
+      <div class="sub">
+        <header><span class="mono">Information architecture</span><h3>Every section gets one job</h3></header>
+        <div class="ia">
+          <div><span class="mono">Current · 5 sections</span><ol>
+            <li><span class="job">Promise</span><span>Hero<em>Abstract headline, two CTAs</em></span></li>
+            <li><span class="job">Products</span><span>Meet our products<em>Uneven cards</em></span></li>
+            <li><span class="job">Effort</span><span>How it works<em>Sign-in only</em></span></li>
+            <li><span class="job">Upside</span><span>Marketplace<em>Claims, no example</em></span></li>
+            <li><span class="job">Ecosystem</span><span>Works with AI<em>Then the footer. No ask.</em></span></li>
+          </ol></div>
+          <div><span class="mono">Final · 7 sections</span><ol>
+            <li><span class="job">Promise</span><span>Hero + product doors<em>Benefit headline, proof chip, one primary CTA</em></span></li>
+            <li><span class="job">Products</span><span>Hardware and software<em>Agent One leads</em></span></li>
+            <li><span class="job">Effort</span><span>Four steps to your first brief<em>Ends on the payoff</em></span></li>
+            <li class="new"><span class="job">Proof</span><span>hussh vs. typical cloud AI<em>New</em></span></li>
+            <li><span class="job">Upside</span><span>Marketplace<em>Now a working demo</em></span></li>
+            <li><span class="job">Ecosystem</span><span>Four rings<em>Explains how it stays private</em></span></li>
+            <li class="new"><span class="job">Ask</span><span>Bring your life back home<em>New closing CTA</em></span></li>
+          </ol></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="file" id="timeline">
+      <div class="file-head">
+        <div class="file-tag mono"><b>04</b> Design timeline &amp; how I used AI</div>
+        <h2>AI made options cheap. I decided which ones mattered.</h2>
+        <p class="lede">I used AI tools to move faster at every stage: drafting, generating variations and building coded prototypes. The judgment calls stayed mine. Each phase shows what I did, what AI did, and where I chose differently from what the tool produced.</p>
+      </div>
+      <ol class="tl">
+        <li><span class="node">1</span><div class="body">
+          <div class="head"><h3>Understand &amp; audit</h3><span class="out">→ 20 findings, 4 patterns</span></div>
+          <div class="split"><div class="me"><span class="who">Me</span><ul><li>Walked the live page section by section</li><li>Applied heuristics, rated severity, grouped patterns</li></ul></div><div class="bot"><span class="who">AI</span><ul><li>Suggested a starting checklist and a case-study outline</li><li>Sampled text contrast from screenshots</li></ul></div></div>
+          <p class="call"><b>Decision</b>The AI outline listed "low text contrast" as a major issue. I measured it: only one caption failed. I reframed the problem as hierarchy, not contrast.</p>
+        </div></li>
+        <li><span class="node">2</span><div class="body">
+          <div class="head"><h3>Frame</h3><span class="out">→ brief, priorities, scoring criteria</span></div>
+          <div class="split"><div class="me"><span class="who">Me</span><ul><li>Problem statement and the Agent One-first strategy</li><li>Three priorities and the criteria to judge directions</li></ul></div><div class="bot"><span class="who">AI</span><ul><li>Generated alternative "How might we" phrasings to pressure-test mine</li></ul></div></div>
+        </div></li>
+        <li><span class="node">3</span><div class="body">
+          <div class="head"><h3>Diverge on structure</h3><span class="out">→ baseline + 4 wireframes</span></div>
+          <div class="split"><div class="me"><span class="who">Me</span><ul><li>Defined four structural bets and the sections each had to include</li><li>Redrew the current page as a baseline</li></ul></div><div class="bot"><span class="who">AI</span><ul><li>Turned each brief into a grayscale wireframe fast enough to compare all four in one sitting</li></ul></div></div>
+        </div></li>
+        <li><span class="node">4</span><div class="body">
+          <div class="head"><h3>Diverge on look</h3><span class="out">→ 5 coded visual directions</span></div>
+          <div class="split"><div class="me"><span class="who">Me</span><ul><li>Art direction: mascot, gold, 3D product scenes, light versus dark</li><li>Reviewed each direction against the brief</li></ul></div><div class="bot"><span class="who">AI</span><ul><li>Built each direction as a coded prototype with a version switcher, so I could flip between them on one page</li></ul></div></div>
+        </div></li>
+        <li><span class="node">5</span><div class="body">
+          <div class="head"><h3>Decide &amp; converge</h3><span class="out">→ one concept</span></div>
+          <div class="split"><div class="me"><span class="who">Me</span><ul><li>Weighted scoring; chose which part of each direction to keep</li><li>Rewrote headline and CTAs</li></ul></div><div class="bot"><span class="who">AI</span><ul><li>Assembled the combined concept from my list of parts</li></ul></div></div>
+          <p class="call"><b>Decision</b>The generated copy described Puppy One as "a small computer for home." That's not what hussh sells. I restored the accurate description: a laptop or Apple Silicon Mac with Agent One preinstalled.</p>
+        </div></li>
+        <li><span class="node">6</span><div class="body">
+          <div class="head"><h3>Build &amp; refine</h3><span class="out">→ live site, desktop + mobile, design kit</span></div>
+          <div class="split"><div class="me"><span class="who">Me</span><ul><li>Design tokens, type scale, 44px targets, focus and label requirements</li><li>Reviewed every section at 1440 and 390 wide</li></ul></div><div class="bot"><span class="who">AI</span><ul><li>Built the responsive page from the concept and tokens with an AI app builder</li></ul></div></div>
+          <p class="call"><b>Decision</b>The concept's AI section was a bare row of chips. I brought back the four-rings diagram from the Manifesto direction, because it explains how hussh stays private instead of just listing logos.</p>
+        </div></li>
+        <li><span class="node">7</span><div class="body">
+          <div class="head"><h3>Verify &amp; present</h3><span class="out">→ this case study</span></div>
+          <div class="split"><div class="me"><span class="who">Me</span><ul><li>Decided what to claim and labeled hypotheses as hypotheses</li></ul></div><div class="bot"><span class="who">AI</span><ul><li>Ran accessibility checks on the live page; helped assemble this site</li></ul></div></div>
+        </div></li>
+      </ol>
+      <div class="sub">
+        <header><span class="mono">Rules I held myself to</span></header>
+        <div class="rules3">
+          <div><h4>AI never picks the direction</h4><p>It generates options and builds them. Scoring and the final choice are mine.</p></div>
+          <div><h4>Product facts come from hussh</h4><p>Generated copy gets checked against the real product before it ships.</p></div>
+          <div><h4>Measure before claiming</h4><p>Every number on this page was measured; everything else is labeled a hypothesis.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="file" id="explore">
+      <div class="file-head">
+        <div class="file-tag mono"><b>05</b> Wireframes &amp; visual explorations</div>
+        <h2>Four bets on what convinces a visitor</h2>
+        <p class="lede">Each direction answers one question differently: <strong>what does a skeptical visitor need to see first?</strong> I wireframed each in grayscale, then took it to full fidelity.</p>
+      </div>
+      <div class="lineup">
+        <figure><img src="img/top-current.webp" width="1200" height="960" alt="Current hero" class="zoom" loading="lazy"><figcaption><b>Current</b>Dark, abstract</figcaption></figure>
+        <figure><img src="img/top-refine.webp" width="1200" height="960" alt="Direction A hero" data-open="#i-hf-refine" loading="lazy"><figcaption><b>A · Refine</b>Sharper, same order</figcaption></figure>
+        <figure><img src="img/top-story.webp" width="1200" height="959" alt="Direction B hero" data-open="#i-hf-story" loading="lazy"><figcaption><b>B · Story</b>Problem first</figcaption></figure>
+        <figure><img src="img/top-tour.webp" width="1200" height="960" alt="Direction C hero" data-open="#i-hf-tour" loading="lazy"><figcaption><b>C · Tour</b>Category first</figcaption></figure>
+        <figure><img src="img/top-manifesto.webp" width="1200" height="960" alt="Direction D hero" data-open="#i-hf-manifesto" loading="lazy"><figcaption><b>D · Manifesto</b>Editorial</figcaption></figure>
+        <figure><img src="img/top-blend.webp" width="1200" height="960" alt="Direction E hero" data-open="#i-hf-blend" loading="lazy"><figcaption><b>E · Blend</b>Tour, dark mood</figcaption></figure>
+        <figure><img src="img/top-final.webp" width="1200" height="960" alt="Converged concept hero" data-open="#i-concept" loading="lazy"><figcaption><b>Concept</b>Light blend</figcaption></figure>
+        <figure class="pick"><img src="img/top-built.webp" width="1200" height="960" alt="Built final hero" data-open="#i-built" loading="lazy"><figcaption><b>Built final</b>Shipped design</figcaption></figure>
+      </div>
+
+      <div class="sub">
+        <div class="gallery" data-gallery>
+          <div class="tabs" role="tablist" aria-label="Directions">
+            <button role="tab" aria-selected="true" aria-controls="dir-a">A · Refine</button>
+            <button role="tab" aria-selected="false" aria-controls="dir-b">B · Story</button>
+            <button role="tab" aria-selected="false" aria-controls="dir-c">C · Tour</button>
+            <button role="tab" aria-selected="false" aria-controls="dir-d">D · Manifesto</button>
+            <button role="tab" aria-selected="false" aria-controls="dir-e">E · Blend</button>
+          </div>
+          <div class="panel" role="tabpanel" id="dir-a">
+            <div><div class="tabs" role="group" aria-label="Fidelity"><button type="button" class="fid" aria-pressed="true" data-show="0">Visual</button><button type="button" class="fid" aria-pressed="false" data-show="1">Wireframe</button></div>
+              <div class="frame"><img id="i-hf-refine" src="img/hf-refine.webp" width="1969" height="8000" alt="Direction A visual" loading="lazy"><img src="img/wf-refine.webp" width="2000" height="5193" alt="Direction A wireframe" loading="lazy" hidden></div></div>
+            <div class="rationale"><span class="mono">Bet: fix the current page, don't replace it</span><p class="hl">"Your AI. Your device. Nobody else."</p>
+              <dl><div class="pro"><dt><h4>Strengths</h4></dt><dd><ul><li>Lowest risk; every section maps to one today</li><li>Bento makes Agent One twice the size of the hardware</li></ul></dd></div>
+              <div class="con"><dt><h4>Tradeoffs</h4></dt><dd><ul><li>No proof section; privacy is asserted</li><li>The AI band stayed nearly empty</li></ul></dd></div></dl>
+              <div class="verdict"><b>Carried forward</b>The product bento and the closing CTA.</div></div>
+          </div>
+          <div class="panel" role="tabpanel" id="dir-b" hidden>
+            <div><div class="tabs" role="group" aria-label="Fidelity"><button type="button" class="fid" aria-pressed="true" data-show="0">Visual</button><button type="button" class="fid" aria-pressed="false" data-show="1">Wireframe</button></div>
+              <div class="frame"><img id="i-hf-story" src="img/hf-story.webp" width="1297" height="8000" alt="Direction B visual" loading="lazy"><img src="img/wf-story.webp" width="2000" height="7319" alt="Direction B wireframe" loading="lazy" hidden></div></div>
+            <div class="rationale"><span class="mono">Bet: show the problem before the product</span><p class="hl">"Right now, your life lives on someone else's computer."</p>
+              <dl><div class="pro"><dt><h4>Strengths</h4></dt><dd><ul><li>Strongest emotional case</li><li>"A day with Agent One" timeline is the most concrete product description</li></ul></dd></div>
+              <div class="con"><dt><h4>Tradeoffs</h4></dt><dd><ul><li>11 sections; first product appears two screens down</li><li>The hero shows no product</li></ul></dd></div></dl>
+              <div class="verdict"><b>Carried forward</b>"Bring your life back home." and the day-in-the-life details.</div></div>
+          </div>
+          <div class="panel" role="tabpanel" id="dir-c" hidden>
+            <div><div class="tabs" role="group" aria-label="Fidelity"><button type="button" class="fid" aria-pressed="true" data-show="0">Visual</button><button type="button" class="fid" aria-pressed="false" data-show="1">Wireframe</button></div>
+              <div class="frame"><img id="i-hf-tour" src="img/hf-tour.webp" width="1728" height="8000" alt="Direction C visual" loading="lazy"><img src="img/wf-tour.webp" width="2000" height="6920" alt="Direction C wireframe" loading="lazy" hidden></div></div>
+            <div class="rationale"><span class="mono">Bet: a product tour with proof at every stop</span><p class="hl">"Private AI that lives with you, not in the cloud."</p>
+              <dl><div class="pro"><dt><h4>Strengths</h4></dt><dd><ul><li>Clearest headline: category plus difference</li><li>Comparison table and marketplace demo make privacy concrete</li></ul></dd></div>
+              <div class="con"><dt><h4>Tradeoffs</h4></dt><dd><ul><li>Tabs in "Pick your One" hide two of three products</li><li>The yellow closing card loses hussh's dark gravity</li></ul></dd></div></dl>
+              <div class="verdict"><b>Carried forward</b>The spine of the final page.</div></div>
+          </div>
+          <div class="panel" role="tabpanel" id="dir-d" hidden>
+            <div><div class="tabs" role="group" aria-label="Fidelity"><button type="button" class="fid" aria-pressed="true" data-show="0">Visual</button><button type="button" class="fid" aria-pressed="false" data-show="1">Wireframe</button></div>
+              <div class="frame"><img id="i-hf-manifesto" src="img/hf-manifesto.webp" width="1770" height="8000" alt="Direction D visual" loading="lazy"><img src="img/wf-manifesto.webp" width="2000" height="6221" alt="Direction D wireframe" loading="lazy" hidden></div></div>
+            <div class="rationale"><span class="mono">Bet: lead with conviction, like a magazine</span><p class="hl">"Shh. Your intelligence is personal property."</p>
+              <dl><div class="pro"><dt><h4>Strengths</h4></dt><dd><ul><li>Most distinctive; stats strip makes proof scannable</li><li>The four-rings diagram explains the architecture</li></ul></dd></div>
+              <div class="con"><dt><h4>Tradeoffs</h4></dt><dd><ul><li>"Shh." says nothing about the product</li><li>A serif display is a rebrand, outside the brief</li></ul></dd></div></dl>
+              <div class="verdict"><b>Carried forward</b>The four rings, rebuilt in the final with real logos.</div></div>
+          </div>
+          <div class="panel" role="tabpanel" id="dir-e" hidden>
+            <div><div class="tabs" role="group" aria-label="Fidelity"><button type="button" class="fid" aria-pressed="true" data-show="0">Visual</button></div>
+              <div class="frame"><img id="i-hf-blend" src="img/hf-blend.webp" width="1845" height="8000" alt="Direction E visual" loading="lazy"></div></div>
+            <div class="rationale"><span class="mono">First convergence attempt</span><p class="hl">"Private AI that lives with you. Nobody else."</p>
+              <dl><div class="pro"><dt><h4>Strengths</h4></dt><dd><ul><li>Proved Tour's structure survives a darker brand</li><li>Trust row under the CTAs</li></ul></dd></div>
+              <div class="con"><dt><h4>Tradeoffs</h4></dt><dd><ul><li>Expanding gallery needs hover, which touch screens lack</li><li>Pastel renders on near-black look pasted on</li></ul></dd></div></dl>
+              <div class="verdict"><b>Verdict</b>Right structure, wrong ground. Lightened into the concept.</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="file" id="decision">
+      <div class="file-head">
+        <div class="file-tag mono"><b>06</b> Decision</div>
+        <h2>Scored against the brief, then combined</h2>
+        <p class="lede">Each direction scored 1–5 on six criteria. These are my design judgments, not test results. Clarity weighs most because it's the current page's biggest failure. <strong>Change the weights</strong> to see how robust the choice is.</p>
+      </div>
+      <div class="tbl"><table class="matrix">
+        <thead><tr><th>Direction</th>
+          <th class="c">Clarity<input type="range" min="0" max="3" value="3" data-w="0" aria-label="Weight for clarity"><span class="w">×3</span></th>
+          <th class="c">Agent One focus<input type="range" min="0" max="3" value="2" data-w="1" aria-label="Weight for Agent One focus"><span class="w">×2</span></th>
+          <th class="c">Trust<input type="range" min="0" max="3" value="2" data-w="2" aria-label="Weight for trust"><span class="w">×2</span></th>
+          <th class="c">Brand<input type="range" min="0" max="3" value="1" data-w="3" aria-label="Weight for brand"><span class="w">×1</span></th>
+          <th class="c">Path to start<input type="range" min="0" max="3" value="2" data-w="4" aria-label="Weight for path to start"><span class="w">×2</span></th>
+          <th class="c">Build cost<input type="range" min="0" max="3" value="1" data-w="5" aria-label="Weight for build cost"><span class="w">×1</span></th>
+          <th>Weighted</th></tr></thead>
+        <tbody id="mbody"></tbody>
+      </table></div>
+      <div class="sub">
+        <header><span class="mono">The synthesis</span><h3>Tour's spine, with each weak spot fixed by another direction</h3></header>
+        <div class="synth-map">
+          <div><span class="from">C · Tour</span><h4>The spine</h4><p>Headline and highlighter, product doors, four steps, comparison, marketplace demo.</p></div>
+          <div><span class="from">A · Refine</span><h4>The product bento</h4><p>All three products visible at once, Agent One at twice the size.</p></div>
+          <div><span class="from">B · Story</span><h4>The close</h4><p>"Bring your life back home." in a dark band.</p></div>
+          <div><span class="from">D · Manifesto</span><h4>The four rings</h4><p>Explains how the privacy works, not just that it exists.</p></div>
+          <div><span class="from">E · Blend</span><h4>Proof chips</h4><p>"On-device · Encrypted · Free for life" above the headline.</p></div>
+          <div class="drop"><span class="from">Left out</span><h4>On purpose</h4><p>The data-web diagram, the expanding gallery and the FAQ.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="file" id="copy">
+      <div class="file-head">
+        <div class="file-tag mono"><b>07</b> UX copy</div>
+        <h2>Words did half the redesign</h2>
+        <p class="lede">The audit's biggest problems were copy problems. I tested headlines, collapsed nine CTA labels into three intents, and set five voice rules.</p>
+      </div>
+      <div class="tbl"><table>
+        <thead><tr><th>Headline</th><th>Names it</th><th>Different</th><th>Plain</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr class="copy-row"><td>Personal supercomputing, owned by you.</td><td><span class="ck n">✕</span></td><td><span class="ck p">~</span></td><td><span class="ck n">✕</span></td><td>Current. Sounds like hardware specs.</td></tr>
+          <tr class="copy-row"><td>Your AI. Your device. Nobody else.</td><td><span class="ck p">~</span></td><td><span class="ck y">✓</span></td><td><span class="ck y">✓</span></td><td>Strong rhythm; vague about what it does.</td></tr>
+          <tr class="copy-row"><td>Right now, your life lives on someone else's computer.</td><td><span class="ck n">✕</span></td><td><span class="ck y">✓</span></td><td><span class="ck y">✓</span></td><td>Names the problem, not the product.</td></tr>
+          <tr class="copy-row"><td>Shh. Your intelligence is personal property.</td><td><span class="ck n">✕</span></td><td><span class="ck p">~</span></td><td><span class="ck n">✕</span></td><td>Memorable for fans, opaque for newcomers.</td></tr>
+          <tr class="copy-row pick"><td>Private AI that lives with you, not in the cloud.</td><td><span class="ck y">✓</span></td><td><span class="ck y">✓</span></td><td><span class="ck y">✓</span></td><td><b>Chosen.</b> Category, benefit and contrast in ten words. The highlighter sits on the benefit.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="sub">
+        <div class="cta-compare">
+          <div><span class="mono">Current CTAs · 9 labels</span>
+            <div class="lbls"><span class="p">Get Agent One</span><span>Get Agent One, free →</span><span>hussh Shop</span><span class="lnk">Explore Agent One →</span><span class="lnk">Explore Puppy One →</span><span class="lnk">Explore Tag One →</span><span class="p">Create your Agent One →</span><span class="p">Open your profile</span><span class="lnk">Explore the idea ›</span></div>
+          </div>
+          <div><span class="mono">Final CTAs · 3 intents</span>
+            <div class="lbls"><em>Start</em><span class="g">Get Agent One</span><span class="p">Get Agent One, free →</span><span class="gl">Join Agent One to try it first →</span><em>Learn</em><span>See how it works</span><span class="gl">Explore Puppy One ↗</span><em>Wait</em><span class="p">Get early access</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="sub">
+        <div class="voice">
+          <div><h4>Proof over posture</h4><p class="x">Sovereign intelligence</p><p class="o">On-device · Encrypted · Free for life</p></div>
+          <div><h4>Describe the thing</h4><p class="x">A laptop, an Apple Silicon Mac, Dell or Acer, that comes preinstalled with Agent One.</p><p class="o">A laptop or Apple Silicon Mac with Agent One preinstalled. Your information stays on your machine.</p></div>
+          <div><h4>Plain words over jargon</h4><p class="x">A private cryptographic shield between you and existing frontier assistants.</p><p class="o">hussh sits between you and it as a private shield, so it gets your question, never your identity.</p></div>
+          <div><h4>Say exactly what happens</h4><p class="x">No spam. Unsubscribe anytime.</p><p class="o">We only use your email to send your invite. Unsubscribe anytime.</p></div>
+          <div><h4>Numbers over adjectives</h4><p class="x">Fast, easy setup</p><p class="o">About two minutes, start to finish.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="file" id="final">
+      <div class="file-head">
+        <div class="file-tag mono"><b>08</b> The redesign, before &amp; after</div>
+        <h2>Swipe through the page, section by section</h2>
+        <p class="lede">Each pair shows the same vertical space at the same width: the redesign on the left, the current hussh homepage on the right. <strong>Drag the handle</strong>, or focus it and use the arrow keys.</p>
+      </div>
+      <div class="gallery" data-gallery>
+        <div class="tabs" role="tablist" aria-label="Sections to compare">
+          <button role="tab" aria-selected="true" aria-controls="sw-1">Hero</button>
+          <button role="tab" aria-selected="false" aria-controls="sw-2">Products</button>
+          <button role="tab" aria-selected="false" aria-controls="sw-3">How it works</button>
+          <button role="tab" aria-selected="false" aria-controls="sw-5">Marketplace</button>
+          <button role="tab" aria-selected="false" aria-controls="sw-6">AI ecosystem</button>
+          <button role="tab" aria-selected="false" aria-controls="sw-7">Ending</button>
+        </div>
+        <div role="tabpanel" id="sw-1">
+          <div class="swipe" style="--pos:55%"><img src="img/b-01-hero.webp" width="1470" height="919" alt="Before: current hero"><div class="after"><img src="img/d-01-hero.webp" width="2400" height="1500" alt="After: redesigned hero"></div><input type="range" min="0" max="100" value="55" aria-label="Compare hero, before and after"><div class="handle"></div><span class="lbl a">After</span><span class="lbl b">Before</span></div>
+          <div class="swipe-notes"><div><span class="mono">Before</span><p>Belief-led headline, shop as the second action, proof in 13px.</p></div><div><span class="mono">After</span><p>Names the product category, highlights the benefit, puts proof above the headline and adds three color-coded product doors.</p></div></div>
+        </div>
+        <div role="tabpanel" id="sw-2" hidden>
+          <div class="swipe" style="--pos:55%"><img src="img/b-02-products.webp" width="1470" height="1191" alt="Before: current products"><div class="after"><img src="img/d-02-products.webp" width="2400" height="1945" alt="After: redesigned products"></div><input type="range" min="0" max="100" value="55" aria-label="Compare products, before and after"><div class="handle"></div><span class="lbl a">After</span><span class="lbl b">Before</span></div>
+          <div class="swipe-notes"><div><span class="mono">Before</span><p>A phone mock, a tiny emoji and a stamp. Unequal care, unclear lead.</p></div><div><span class="mono">After</span><p>Agent One takes two thirds with a real scene. Every product has its own render and the action that fits its status.</p></div></div>
+        </div>
+        <div role="tabpanel" id="sw-3" hidden>
+          <div class="swipe" style="--pos:55%"><img src="img/b-03-how-it-works.webp" width="1470" height="903" alt="Before: current how it works"><div class="after"><img src="img/d-03-how-it-works.webp" width="2400" height="1475" alt="After: redesigned how it works"></div><input type="range" min="0" max="100" value="55" aria-label="Compare how it works, before and after"><div class="handle"></div><span class="lbl a">After</span><span class="lbl b">Before</span></div>
+          <div class="swipe-notes"><div><span class="mono">Before</span><p>Three steps, two look disabled, the visual stops at sign-in.</p></div><div><span class="mono">After</span><p>Four steps ending on the morning brief, a two-minute time promise, and a phone that shows the privacy promises.</p></div></div>
+        </div>
+        <div role="tabpanel" id="sw-5" hidden>
+          <div class="swipe" style="--pos:55%"><img src="img/b-05-marketplace.webp" width="1470" height="1262" alt="Before: current marketplace"><div class="after"><img src="img/d-05-marketplace.webp" width="2400" height="2060" alt="After: redesigned marketplace"></div><input type="range" min="0" max="100" value="55" aria-label="Compare marketplace, before and after"><div class="handle"></div><span class="lbl a">After</span><span class="lbl b">Before</span></div>
+          <div class="swipe-notes"><div><span class="mono">Before</span><p>Four short claims, centered, ending in "Open your profile."</p></div><div><span class="mono">After</span><p>Four cards that show each step: what's shared, a $12 floor price, a request to approve, and earnings with a 0% fee.</p></div></div>
+        </div>
+        <div role="tabpanel" id="sw-6" hidden>
+          <div class="swipe" style="--pos:55%"><img src="img/b-06-ai-rings.webp" width="1470" height="1287" alt="Before: current AI ecosystem band"><div class="after"><img src="img/d-06-ai-rings.webp" width="2400" height="2102" alt="After: four rings diagram"></div><input type="range" min="0" max="100" value="55" aria-label="Compare AI ecosystem, before and after"><div class="handle"></div><span class="lbl a">After</span><span class="lbl b">Before</span></div>
+          <div class="swipe-notes"><div><span class="mono">Before</span><p>A mostly empty band with jargon and seven chips.</p></div><div><span class="mono">After</span><p>Four rings explain where the protection sits, with your AI tools outside and a plain-language list beside them.</p></div></div>
+        </div>
+        <div role="tabpanel" id="sw-7" hidden>
+          <div class="swipe" style="--pos:55%"><img src="img/b-07-closing-cta.webp" width="1470" height="624" alt="Before: page ends at footer"><div class="after"><img src="img/d-07-closing-cta.webp" width="2400" height="1018" alt="After: closing call to action"></div><input type="range" min="0" max="100" value="55" aria-label="Compare page ending, before and after"><div class="handle"></div><span class="lbl a">After</span><span class="lbl b">Before</span></div>
+          <div class="swipe-notes"><div><span class="mono">Before</span><p>The page goes straight to the footer.</p></div><div><span class="mono">After</span><p>One clear closing ask with the email field, in a dark band that keeps hussh's original character.</p></div></div>
+        </div>
+      </div>
+      <p class="note" style="margin-top:20px">The comparison section ("hussh vs. typical cloud AI") is new and has no current equivalent, so it isn't in the swipe. It's in the annotated walkthrough below.</p>
+
+      <div class="sub">
+        <header><span class="mono">Annotated walkthrough</span><h3>The decisions behind the key sections</h3></header>
+        <div class="anno" data-group>
+          <div class="pinwrap"><img class="zoom" src="img/d-01-hero.webp" width="2400" height="1500" alt="Redesigned hero">
+            <button class="pin good" style="--x:31%;--y:23%" data-f="a">A</button><button class="pin good" style="--x:41%;--y:40%" data-f="b">B</button><button class="pin good" style="--x:40%;--y:71%" data-f="c">C</button><button class="pin good" style="--x:92%;--y:34%" data-f="d">D</button><button class="pin good" style="--x:50%;--y:93%" data-f="e">E</button></div>
+          <div><h3>Hero</h3><ul class="findings">
+            <li data-f="a"><span class="n good">A</span><div><h4>Proof replaces posture</h4><p>"On-device · Encrypted · Free for life" replaces "Sovereign intelligence." Fixes 2, 4.</p></div></li>
+            <li data-f="b"><span class="n good">B</span><div><h4>A headline a newcomer can repeat</h4><p>The highlighter lands on "lives with you," the part that's different.</p></div></li>
+            <li data-f="c"><span class="n good">C</span><div><h4>One primary, one secondary</h4><p>"Get Agent One, free" leads; "See how it works" says exactly where it goes. The shop moved to the Puppy One card. Fixes 3.</p></div></li>
+            <li data-f="d"><span class="n good">D</span><div><h4>The mascot shows the product working</h4><p>"Stays on your device" and "Your morning brief is ready" turn a mascot into a product shot.</p></div></li>
+            <li data-f="e"><span class="n good">E</span><div><h4>Three color-coded doors</h4><p>Butter, sky and blush tiles with each product's status. The colors return lower down. Fixes 1.</p></div></li>
+          </ul></div>
+        </div>
+        <div class="anno" data-group>
+          <div class="pinwrap"><img class="zoom" src="img/d-04-comparison.webp" width="2400" height="1327" alt="hussh vs typical cloud AI comparison table">
+            <button class="pin good" style="--x:60%;--y:20%" data-f="f">F</button><button class="pin good" style="--x:48%;--y:62%" data-f="g">G</button></div>
+          <div><h3>Comparison (new)</h3><ul class="findings">
+            <li data-f="f"><span class="n good">F</span><div><h4>Privacy as six checkable rows</h4><p>Where data lives, who reads it, training, ads, selling, price. A visitor can check each claim against what they know.</p></div></li>
+            <li data-f="g"><span class="n good">G</span><div><h4>Never icon or color alone</h4><p>Every ✓ and ✕ carries the word "Yes" or "No", so the meaning survives for color-blind and screen-reader users.</p></div></li>
+          </ul></div>
+        </div>
+        <div class="anno" data-group>
+          <div class="pinwrap"><img class="zoom" src="img/d-05-marketplace.webp" width="2400" height="2060" alt="Redesigned marketplace section">
+            <button class="pin good" style="--x:55%;--y:50%" data-f="h">H</button><button class="pin good" style="--x:92%;--y:41%" data-f="i">I</button><button class="pin good" style="--x:42%;--y:72%" data-f="j">J</button><button class="pin good" style="--x:47%;--y:90%" data-f="k">K</button></div>
+          <div><h3>Marketplace</h3><ul class="findings">
+            <li data-f="h"><span class="n good">H</span><div><h4>What's never shared is shown too</h4><p>"Messages and name: Never shared" answers the scary question before it's asked.</p></div></li>
+            <li data-f="i"><span class="n good">I</span><div><h4>A price you can picture</h4><p>$12 per request on a $1–$40 scale makes the idea concrete. Fixes 14.</p></div></li>
+            <li data-f="j"><span class="n good">J</span><div><h4>Nothing moves without a yes</h4><p>A named request with Decline and Approve shows control instead of claiming it.</p></div></li>
+            <li data-f="k"><span class="n good">K</span><div><h4>Honest about status</h4><p>"The Information Marketplace is in preview," with one clear next step. Fixes 13.</p></div></li>
+          </ul></div>
+        </div>
+      </div>
+
+      <div class="sub">
+        <header><span class="mono">Concept to build</span><h3>What changed once it was real</h3><p>Building the concept as a working page surfaced problems a static mockup hid.</p></header>
+        <div class="refine">
+          <div><h4>Secondary CTA names its destination</h4><p class="was"><s>Take the tour</s> → See how it works</p><p>"Tour" could mean a video, a demo or a page. The new label says where it scrolls.</p></div>
+          <div><h4>"How it works" became interactive</h4><p class="was">Four static icons → step list + phone</p><p>Each step updates the phone mock, with a pause control for the auto-advance.</p></div>
+          <div><h4>Comparison moved to a dark band</h4><p class="was">Light card → dark section</p><p>Gives the page a mid-scroll pause and brings the brand's dark tone back early.</p></div>
+          <div><h4>Marketplace grew to four cards</h4><p class="was">One request card → four step cards</p><p>Each of the four promises now has its own proof, including a "never shared" item.</p></div>
+          <div><h4>The rings came back</h4><p class="was">Chip row → four-rings diagram</p><p>Real logos plus a trademark note; explains the shield instead of listing partners.</p></div>
+          <div><h4>Microcopy got specific</h4><p class="was"><s>No spam.</s> → We only use your email to send your invite.</p><p>Says what will happen, which matters more on a privacy product.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="file" id="responsive">
+      <div class="file-head">
+        <div class="file-tag mono"><b>09</b> Responsive design</div>
+        <h2>One page, designed at 1440 and 390</h2>
+        <p class="lede">Mobile wasn't shrunk from desktop. Each section was laid out for a thumb: content order follows importance, nothing scrolls sideways, and every button is at least 44px tall.</p>
+      </div>
+      <div class="device-toggle" role="group" aria-label="Device preview">
+        <button type="button" aria-pressed="true" data-dev="desk">Desktop 1440</button>
+        <button type="button" aria-pressed="false" data-dev="mob">Mobile 390</button>
+      </div>
+      <div class="stage">
+        <div class="browser" id="dev-desk"><div class="bar"><i></i><i></i><i></i><span>hussh · full page · scroll inside</span></div><div class="scroll"><img id="i-built" src="img/d-full.webp" width="2400" height="12532" alt="Full redesigned page on desktop" loading="lazy"></div></div>
+        <div class="phone" id="dev-mob" hidden><div class="scroll"><img src="img/m-full.jpg" width="780" height="24646" alt="Full redesigned page on mobile" loading="lazy"></div></div>
+      </div>
+      <div class="sub">
+        <header><span class="mono">How each section adapts</span><p>Scroll inside each phone; swipe the row for more.</p></header>
+        <div class="strip">
+          <figure><div class="phone"><div class="scroll"><img src="img/m-01-hero.webp" width="780" height="2842" alt="Mobile hero" loading="lazy"></div></div><figcaption><b>Nav &amp; hero</b>Five menus collapse to search and a menu button. Text and CTAs come first; the visual moves below; product doors stack.</figcaption></figure>
+          <figure><div class="phone"><div class="scroll"><img src="img/m-02-products.webp" width="780" height="3270" alt="Mobile products" loading="lazy"></div></div><figcaption><b>Products</b>The bento becomes one column with Agent One still first.</figcaption></figure>
+          <figure><div class="phone"><div class="scroll"><img src="img/m-03-how-it-works.webp" width="780" height="3032" alt="Mobile how it works" loading="lazy"></div></div><figcaption><b>How it works</b>Steps first, phone mock after, so the instructions aren't pushed below a picture.</figcaption></figure>
+          <figure><div class="phone"><div class="scroll"><img src="img/m-04-comparison.webp" width="780" height="2784" alt="Mobile comparison" loading="lazy"></div></div><figcaption><b>Comparison</b>The table becomes one card per question, hussh and cloud AI side by side. No sideways scrolling.</figcaption></figure>
+          <figure><div class="phone"><div class="scroll"><img src="img/m-05-marketplace.webp" width="780" height="4494" alt="Mobile marketplace" loading="lazy"></div></div><figcaption><b>Marketplace</b>Four cards stack in the order of the four steps.</figcaption></figure>
+          <figure><div class="phone"><div class="scroll"><img src="img/m-06-ai-rings.webp" width="780" height="3584" alt="Mobile AI rings" loading="lazy"></div></div><figcaption><b>Four rings</b>The diagram scales down; AI names move into a wrapping grid below it.</figcaption></figure>
+          <figure><div class="phone"><div class="scroll"><img src="img/m-07-closing-cta.webp" width="780" height="1686" alt="Mobile closing CTA" loading="lazy"></div></div><figcaption><b>Closing CTA</b>The email field and button stay on one line; the mascot follows.</figcaption></figure>
+          <figure><div class="phone"><div class="scroll"><img src="img/m-08-footer.webp" width="780" height="2968" alt="Mobile footer" loading="lazy"></div></div><figcaption><b>Footer</b>Six columns become two.</figcaption></figure>
+        </div>
+      </div>
+      <div class="sub">
+        <div class="tbl"><table>
+          <thead><tr><th>Token</th><th>Desktop</th><th>Mobile</th></tr></thead>
+          <tbody>
+            <tr><td>H1</td><td class="num">72 / 1.04</td><td class="num">44 / 1.04</td></tr>
+            <tr><td>H2</td><td class="num">48–60 / 1.04</td><td class="num">36 / 1.05</td></tr>
+            <tr><td>Body</td><td class="num">17 / 1.6</td><td class="num">17 / 1.6</td></tr>
+            <tr><td>Side gutter</td><td class="num">32</td><td class="num">20</td></tr>
+            <tr><td>Section padding</td><td class="num">96</td><td class="num">60</td></tr>
+            <tr><td>Container</td><td class="num">1240</td><td class="num">fluid</td></tr>
+            <tr><td>Button height</td><td class="num">≥ 44</td><td class="num">≥ 44</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <section class="file" id="a11y">
+      <div class="file-head">
+        <div class="file-tag mono"><b>10</b> Accessibility</div>
+        <h2>Built to WCAG 2.2 AA, and checked on the live page</h2>
+        <p class="lede">I didn't stop at a contrast checker on the mockup. I ran checks against the live prototype's real markup and computed styles. What still needs a human test is listed at the end.</p>
+      </div>
+      <div class="score">
+        <div><b>0</b><span>contrast failures across 191 text elements</span></div>
+        <div><b>1</b><span>H1, with H2 and H3 in order, no skipped levels</span></div>
+        <div><b>2/2</b><span>form fields with programmatic labels</span></div>
+        <div><b>44px</b><span>minimum height of buttons in the page body</span></div>
+      </div>
+      <div class="sub" style="margin-top:28px">
+        <div class="tbl"><table class="wcag">
+          <thead><tr><th>Criterion</th><th>Name</th><th>How the page meets it</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>1.1.1</td><td>Non-text content</td><td>Content images have descriptive alt ("The hussh mascot hugging a golden vault"). Decorative images and AI logos, which sit next to their names, use empty alt.</td><td><span class="st pass">Pass</span></td></tr>
+            <tr><td>1.3.1</td><td>Info &amp; relationships</td><td>Header, two navs, main and footer landmarks. One H1, an H2 per section, H3 for cards.</td><td><span class="st pass">Pass</span></td></tr>
+            <tr><td>1.4.1</td><td>Use of color</td><td>Comparison icons carry "Yes"/"No" text. Product colors always appear with the product name and an icon.</td><td><span class="st pass">Pass</span></td></tr>
+            <tr><td>1.4.3</td><td>Contrast (minimum)</td><td>All 191 visible text elements measured against their computed backgrounds meet 4.5:1, or 3:1 for large text.</td><td><span class="st pass">Pass</span></td></tr>
+            <tr><td>1.4.10</td><td>Reflow</td><td>Designed at 390px with no horizontal scrolling; the comparison table becomes stacked cards.</td><td><span class="st pass">Pass</span></td></tr>
+            <tr><td>2.2.2</td><td>Pause, stop, hide</td><td>The auto-advancing "how it works" tour has a "Pause the tour" button.</td><td><span class="st pass">Pass</span></td></tr>
+            <tr><td>2.3.3</td><td>Animation from interactions</td><td>prefers-reduced-motion rules are in place (AAA).</td><td><span class="st pass">Pass</span></td></tr>
+            <tr><td>2.4.1</td><td>Bypass blocks</td><td>"Skip to main content" link at the top.</td><td><span class="st pass">Pass</span></td></tr>
+            <tr><td>2.4.2</td><td>Page titled</td><td>"hussh — Personal AI that lives on your device".</td><td><span class="st pass">Pass</span></td></tr>
+            <tr><td>2.4.7</td><td>Focus visible</td><td>A global focus ring: 2px ink outline, 3px offset and a 5px white halo, so it shows on both light and dark sections.</td><td><span class="st pass">Pass</span></td></tr>
+            <tr><td>2.5.8</td><td>Target size</td><td>Buttons in the page body are at least 44px tall. Footer text links are 17px tall and rely on the spacing exception.</td><td><span class="st part">Partial</span></td></tr>
+            <tr><td>3.1.1</td><td>Language of page</td><td>lang="en".</td><td><span class="st pass">Pass</span></td></tr>
+            <tr><td>3.3.2</td><td>Labels or instructions</td><td>Both email fields have labels, plus helper text saying what the email is used for.</td><td><span class="st pass">Pass</span></td></tr>
+            <tr><td>4.1.2</td><td>Name, role, value</td><td>Nav menus expose aria-expanded; the steps showcase is a tablist with a labelled tabpanel; ring items use aria-pressed.</td><td><span class="st pass">Pass</span></td></tr>
+            <tr><td>4.1.3</td><td>Status messages</td><td>Step changes are announced through polite live regions.</td><td><span class="st pass">Pass</span></td></tr>
+            <tr><td>2.1.1</td><td>Keyboard</td><td>Controls are native buttons and links. A full keyboard walkthrough and a screen-reader pass are still to do.</td><td><span class="st todo">To test</span></td></tr>
+          </tbody>
+        </table></div>
+        <p class="cap">Checked on the live prototype on Nov 5, 2026, with scripts that read the page's DOM and computed styles.</p>
+      </div>
+      <div class="sub">
+        <header><span class="mono">Contrast is built into the tokens</span><h3>Every text-and-background pair, before it reaches a page</h3></header>
+        <div class="tbl"><table>
+          <thead><tr><th>Pair</th><th>Colors</th><th>Ratio</th><th>AA</th></tr></thead>
+          <tbody>
+            <tr><td>Ink on ivory</td><td><span class="dot" style="background:#1F1F22"></span>#1F1F22 / #FAF8F5</td><td class="num">15.5 : 1</td><td><span class="st pass">Pass</span></td></tr>
+            <tr><td>Body text on ivory</td><td><span class="dot" style="background:#45474D"></span>#45474D / #FAF8F5</td><td class="num">8.8 : 1</td><td><span class="st pass">Pass</span></td></tr>
+            <tr><td>Muted text on ivory</td><td><span class="dot" style="background:#5B5F68"></span>#5B5F68 / #FAF8F5</td><td class="num">6.0 : 1</td><td><span class="st pass">Pass</span></td></tr>
+            <tr><td>Deep-gold labels on ivory</td><td><span class="dot" style="background:#8A5C14"></span>#8A5C14 / #FAF8F5</td><td class="num">5.5 : 1</td><td><span class="st pass">Pass</span></td></tr>
+            <tr><td>Ink on gold button</td><td><span class="dot" style="background:#E8B56B"></span>#1F1F22 / #E8B56B</td><td class="num">8.8 : 1</td><td><span class="st pass">Pass</span></td></tr>
+            <tr><td>Ink on highlighter</td><td><span class="dot" style="background:#FFE08A"></span>#1F1F22 / #FFE08A</td><td class="num">12.8 : 1</td><td><span class="st pass">Pass</span></td></tr>
+            <tr><td>White on gold</td><td><span class="dot" style="background:#E8B56B"></span>#FFFFFF / #E8B56B</td><td class="num">1.9 : 1</td><td><span class="st todo">Banned</span></td></tr>
+            <tr><td>Gold as text on ivory</td><td><span class="dot" style="background:#E8B56B"></span>#E8B56B / #FAF8F5</td><td class="num">1.8 : 1</td><td><span class="st todo">Banned</span></td></tr>
+          </tbody>
+        </table></div>
+        <p class="note">That's why the system has a separate deep-gold token for text: brand gold works as a fill, never as text.</p>
+      </div>
+      <div class="sub">
+        <header><span class="mono">Still to do</span></header>
+        <div class="themes">
+          <div><h4>Screen-reader pass</h4><p>VoiceOver on iOS and NVDA on Windows, end to end.</p></div>
+          <div><h4>Keyboard walkthrough</h4><p>Tab order through nav menus, the steps tablist and both forms.</p></div>
+          <div><h4>Footer targets</h4><p>Raise footer link line height so each target reaches 24px.</p></div>
+          <div><h4>Mock UI in the marketplace</h4><p>The toggles and slider are illustrations, hidden from screen readers. Test that sighted users don't try to use them.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="file" id="system">
+      <div class="file-head">
+        <div class="file-tag mono"><b>11</b> Visual system</div>
+        <h2>The existing identity, given rules</h2>
+        <p class="lede">Values from the design kit's tokens. Plus Jakarta Sans for everything, IBM Plex Mono for small labels, a color per product, and two button styles.</p>
+      </div>
+      <div class="swatches">
+        <div class="sw"><div class="c" style="background:#1F1F22"></div><div><b>Ink</b><span>#1F1F22</span></div></div>
+        <div class="sw"><div class="c" style="background:#FAF8F5"></div><div><b>Ivory</b><span>#FAF8F5</span></div></div>
+        <div class="sw"><div class="c" style="background:#E8B56B"></div><div><b>Gold</b><span>#E8B56B · fills</span></div></div>
+        <div class="sw"><div class="c" style="background:#8A5C14"></div><div><b>Deep gold</b><span>#8A5C14 · text</span></div></div>
+        <div class="sw"><div class="c" style="background:#FFE08A"></div><div><b>Butter</b><span>#FFE08A · Agent One</span></div></div>
+        <div class="sw"><div class="c" style="background:#A9CBEF"></div><div><b>Sky</b><span>#A9CBEF · Puppy One</span></div></div>
+        <div class="sw"><div class="c" style="background:#F9B8CF"></div><div><b>Bubble</b><span>#F9B8CF · Tag One</span></div></div>
+        <div class="sw"><div class="c" style="background:#BFE3CF"></div><div><b>Mint</b><span>#BFE3CF · earnings</span></div></div>
+      </div>
+      <div class="sub">
+        <div class="type-spec">
+          <div><span class="s">H1 · 72/1.04 · Bold · −4%</span><span class="t" style="font-size:clamp(34px,5vw,64px);font-weight:800;letter-spacing:-.04em;line-height:1.04">Private AI that <mark>lives with you</mark></span></div>
+          <div><span class="s">H2 · 48–60/1.04 · −3%</span><span class="t" style="font-size:clamp(26px,3vw,40px);font-weight:800;letter-spacing:-.03em;line-height:1.05">hussh vs. typical cloud AI.</span></div>
+          <div><span class="s">Body · 17/1.6</span><span class="t" style="font-size:17px;font-weight:500;color:var(--muted)">About two minutes, start to finish.</span></div>
+          <div><span class="s">Label · 12 mono · +14%</span><span class="t" style="font:500 12px 'IBM Plex Mono',var(--f-mono);letter-spacing:.14em;text-transform:uppercase">Step 04 · Your turn</span></div>
+        </div>
+      </div>
+      <div class="sub">
+        <header><span class="mono">Components, rebuilt in code</span><p>Tab through to see the focus ring.</p></header>
+        <div class="specimen">
+          <div class="row"><span class="lbl">Buttons · min height 44</span><button type="button" class="hb d">Get Agent One, free →</button><button type="button" class="hb s">See how it works</button><button type="button" class="hb g">Get Agent One</button></div>
+          <div class="row"><span class="lbl">Proof chips</span><span class="hchip">🛡 On-device · Encrypted · Free for life</span><span class="hchip">🔒 Stays on your device</span></div>
+          <div class="row"><span class="lbl">Product doors</span>
+            <div class="qlink" style="background:#FDF0C9"><span>✦</span><span><b>Agent One</b><small>Free app</small></span><span>→</span></div>
+            <div class="qlink" style="background:#D9E7F7"><span>▣</span><span><b>Puppy One</b><small>Your own computer</small></span><span>→</span></div>
+            <div class="qlink" style="background:#FCDDE8"><span>◉</span><span><b>Tag One</b><small>Coming soon</small></span><span>→</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="file" id="next">
+      <div class="file-head">
+        <div class="file-tag mono"><b>12</b> Tradeoffs, validation &amp; reflection</div>
+        <h2>What I gave up, and how I'd test it</h2>
+      </div>
+      <div class="trade">
+        <details open><summary><h4>A light page for a brand known for dark</h4><span class="chev">+</span></summary><div class="body"><div><span class="mono">Gained</span><p>Approachability; the pastel product art finally sits on a ground that suits it.</p></div><div><span class="mono">Lost</span><p>Some of the current site's premium mystery.</p></div><div><span class="mono">Mitigation</span><p>Dark nav, comparison band and closing CTA keep the brand's tone. Worth an A/B test.</p></div></div></details>
+        <details><summary><h4>Agent One first, hardware second</h4><span class="chev">+</span></summary><div class="body"><div><span class="mono">Gained</span><p>One obvious, free starting point.</p></div><div><span class="mono">Lost</span><p>Less shelf space for Puppy One.</p></div><div><span class="mono">Mitigation</span><p>Hardware is in the hero doors and has its own render and link.</p></div></div></details>
+        <details><summary><h4>Cutting the FAQ</h4><span class="chev">+</span></summary><div class="body"><div><span class="mono">Gained</span><p>A shorter page; the comparison answers the main doubts.</p></div><div><span class="mono">Lost</span><p>Direct answers to "What if I lose my phone?"</p></div><div><span class="mono">Mitigation</span><p>If testing surfaces these questions, the FAQ from Direction C slots in above the close.</p></div></div></details>
+        <details><summary><h4>Naming "typical cloud AI"</h4><span class="chev">+</span></summary><div class="body"><div><span class="mono">Gained</span><p>Privacy made concrete.</p></div><div><span class="mono">Lost</span><p>Nuance; not every cloud AI trains on data or shows ads.</p></div><div><span class="mono">Mitigation</span><p>Legal review of each row before launch.</p></div></div></details>
+      </div>
+      <div class="sub">
+        <header><span class="mono">Validation plan</span><p>No user research informed this redesign, so its outcomes are hypotheses.</p></header>
+        <div class="tbl"><table>
+          <thead><tr><th>Hypothesis</th><th>Method</th><th>Signal</th></tr></thead>
+          <tbody>
+            <tr><td>The hero explains Agent One faster</td><td>Five-second test, current vs. new</td><td>More people describe it as a private assistant in their own words</td></tr>
+            <tr><td>Visitors know where to start</td><td>First-click test</td><td>First clicks land on Get Agent One</td></tr>
+            <tr><td>Proof sections build trust</td><td>Moderated sessions, think-aloud</td><td>Fewer "but where does my data go?" questions</td></tr>
+            <tr><td>The page converts better</td><td>A/B test after launch</td><td>Hero CTA clicks, scroll past comparison, closing-form submits</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="sub">
+        <header><span class="mono">Reflection</span></header>
+        <div class="rules3">
+          <div><h4>The best direction wasn't one direction</h4><p>Tour won alone, but each other direction solved one problem better. Diverging on structure first made the parts easy to combine.</p></div>
+          <div><h4>AI sped up the making, not the deciding</h4><p>Coded directions arrived fast, which left more time for judging. That's where the design actually happened.</p></div>
+          <div><h4>Measuring changed the brief</h4><p>Checking contrast instead of assuming it moved the work from "darken text" to "fix hierarchy."</p></div>
+        </div>
+      </div>
+      <div class="closing">
+        <span class="mono">In one sentence</span>
+        <h3>A page that tells first-time visitors what hussh does, <mark>shows</mark> them why to trust it, and asks them once, clearly, to start.</h3>
+        <a class="btn" href="https://brand-reborn--6k11q143.preview.emergentagent.com" target="_blank" rel="noopener">Open the live prototype ↗</a>
+      </div>
+      <div class="foot"><span>hussh landing page redesign · design assessment</span><span>Screens: current hussh.ai homepage, explorations and the built prototype</span></div>
+    </section>
+  </main>
+</div>
+
+<img id="i-concept" src="img/final.webp" width="1889" height="8000" alt="Converged concept, full page" hidden>
+<dialog class="lb" id="lb" aria-label="Full size image"><button type="button" id="lb-close">Close</button><div class="in"><img id="lb-img" alt=""></div></dialog>
+
+<script>
+(function(){
+  const root=document.documentElement;
+  const sysDark=()=>matchMedia('(prefers-color-scheme: dark)').matches;
+  document.querySelectorAll('.theme-btn').forEach(b=>b.addEventListener('click',()=>{const c=root.dataset.theme||(sysDark()?'dark':'light');root.dataset.theme=c==='dark'?'light':'dark';}));
+
+  document.querySelectorAll('.swipe').forEach(s=>{const r=s.querySelector('input');r.addEventListener('input',()=>s.style.setProperty('--pos',r.value+'%'));});
+
+  document.querySelectorAll('[data-group]').forEach(g=>{
+    const set=(id,on)=>g.querySelectorAll('[data-f="'+id+'"]').forEach(el=>el.classList.toggle('hot',on));
+    g.querySelectorAll('[data-f]').forEach(el=>{
+      el.addEventListener('mouseenter',()=>set(el.dataset.f,true));el.addEventListener('mouseleave',()=>set(el.dataset.f,false));
+      el.addEventListener('focus',()=>set(el.dataset.f,true));el.addEventListener('blur',()=>set(el.dataset.f,false));
+    });
+    g.querySelectorAll('button.pin').forEach(p=>{p.setAttribute('aria-label','Note '+p.textContent);p.addEventListener('click',()=>{const li=g.querySelector('li[data-f="'+p.dataset.f+'"]');if(li){li.scrollIntoView({block:'nearest',behavior:'smooth'});set(p.dataset.f,true);setTimeout(()=>set(p.dataset.f,false),1400);}});});
+  });
+
+  document.querySelectorAll('[data-gallery]').forEach(g=>{
+    const tabs=[...g.querySelector('[role=tablist]').children];
+    tabs.forEach((t,i)=>{
+      t.addEventListener('click',()=>{tabs.forEach(o=>{o.setAttribute('aria-selected',o===t);document.getElementById(o.getAttribute('aria-controls')).hidden=o!==t;});});
+      t.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){const n=tabs[(i+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length];n.focus();n.click();}});
+    });
+  });
+  document.querySelectorAll('.panel').forEach(p=>{
+    const btns=[...p.querySelectorAll('.fid')];const imgs=[...p.querySelectorAll('.frame img')];
+    btns.forEach(b=>b.addEventListener('click',()=>{btns.forEach(o=>o.setAttribute('aria-pressed',o===b));imgs.forEach((im,i)=>im.hidden=i!==+b.dataset.show);p.querySelector('.frame').scrollTop=0;}));
+  });
+
+  const devBtns=[...document.querySelectorAll('[data-dev]')];
+  devBtns.forEach(b=>b.addEventListener('click',()=>{devBtns.forEach(o=>o.setAttribute('aria-pressed',o===b));document.getElementById('dev-desk').hidden=b.dataset.dev!=='desk';document.getElementById('dev-mob').hidden=b.dataset.dev!=='mob';}));
+
+  const lb=document.getElementById('lb'),li=document.getElementById('lb-img');
+  const open=(src,alt)=>{li.src=src;li.alt=alt||'';lb.showModal?lb.showModal():lb.setAttribute('open','');};
+  document.addEventListener('click',e=>{
+    const t=e.target.closest('[data-open]');
+    if(t){const ref=document.querySelector(t.getAttribute('data-open'));if(ref)open(ref.currentSrc||ref.src,ref.alt);return;}
+    const z=e.target.closest('img.zoom');if(z)open(z.currentSrc||z.src,z.alt);
+  });
+  document.getElementById('lb-close').addEventListener('click',()=>lb.close());
+  lb.addEventListener('click',e=>{if(e.target===lb)lb.close();});
+
+  const rows=[{n:'A · Refine',s:[3,4,2,3,4,5]},{n:'B · Story',s:[3,3,5,4,3,2]},{n:'C · Tour',s:[5,4,4,3,4,3]},{n:'D · Manifesto',s:[2,2,4,5,2,3]},{n:'E · Blend',s:[4,3,4,4,4,3]}];
+  const synth={n:'Final (synthesis)',s:[5,5,5,4,5,3]};
+  const body=document.getElementById('mbody');const ws=[...document.querySelectorAll('.matrix input[data-w]')];
+  const dots=v=>'<span class="dots" role="img" aria-label="'+v+' of 5">'+[1,2,3,4,5].map(i=>'<i class="'+(i<=v?'f':'')+'"></i>').join('')+'</span>';
+  function render(){
+    const w=ws.map(x=>+x.value);ws.forEach((x,i)=>x.nextElementSibling.textContent='×'+w[i]);
+    const max=w.reduce((a,b)=>a+b*5,0)||1;const tot=r=>r.s.reduce((a,v,i)=>a+v*w[i],0);
+    const sorted=rows.slice().sort((a,b)=>tot(b)-tot(a));const lead=tot(sorted[0]);
+    const row=(r,c)=>{const t=tot(r);return '<tr class="'+c+'"><td><b>'+r.n+'</b></td>'+r.s.map(v=>'<td class="sc">'+dots(v)+'</td>').join('')+'<td><div style="display:flex;gap:10px;align-items:center"><span style="font:500 14px var(--f-mono);min-width:48px">'+t+'/'+max+'</span><div class="bar"><span style="width:'+(t/max*100)+'%"></span></div></div></td></tr>';};
+    body.innerHTML=sorted.map(r=>row(r,tot(r)===lead?'lead':'')).join('')+row(synth,'synth');
+  }
+  ws.forEach(x=>x.addEventListener('input',render));render();
+
+  const links=[...document.querySelectorAll('#toc a')];const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+  if('IntersectionObserver' in window){const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.remove('on'));const a=map.get(e.target.id);if(a)a.classList.add('on');}})},{rootMargin:'-40% 0px -55% 0px'});map.forEach((a,id)=>{const el=document.getElementById(id);if(el)io.observe(el);});}
+})();
+</script>
