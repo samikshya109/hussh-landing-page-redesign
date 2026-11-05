@@ -2,8 +2,8 @@
 
 A UX/UI case study redesigning the landing page of hussh, a privacy-first personal AI. It covers the full process: a heuristic audit of the live page, problem framing, wireframes and visual explorations, the design decision, UX copy, the final responsive design and an accessibility review.
 
-**Case study:** https://samikshya109.github.io/hussh-landing-page-redesign/
-**Live prototype:** https://brand-reborn--6k11q143.preview.emergentagent.com
+**Case study:** [https://samikshya109.github.io/hussh-landing-page-redesign/](https://hussh-landing-page-redesign.vercel.app/)
+**Live prototype:** https://hussh-prototype-vercel.vercel.app/
 
 ![Redesigned hussh hero on desktop and mobile](images/top-built.webp)
 
@@ -40,7 +40,7 @@ The current homepage leads with "Personal supercomputing, owned by you." It desc
 
 ## How AI was used
 
-AI tools helped draft, generate wireframe and visual variations, build coded prototypes, and run accessibility checks. Problem framing, scoring, the choice of direction, copy and product accuracy were my decisions. The case study's timeline section shows where I overruled what the tools produced.
+AI tools helped draft, generate wireframe and visual variations, build coded prototypes and run accessibility checks. Problem framing, scoring, the choice of direction, copy and product accuracy were my decisions. The case study's timeline section shows where I overruled what the tools produced. Tools used - Emergent, Figma, Claude Code, Chat GPT.
 
 ## Repository structure
 
@@ -50,15 +50,6 @@ images/      Screenshots of the current site, explorations and final design
 README.md
 ```
 
-## Run it locally
-
-No build step. Open `index.html` in a browser, or serve the folder:
-
-```
-python3 -m http.server
-```
-
-Then visit http://localhost:8000.
 
 ## Notes
 
@@ -66,4 +57,4 @@ Then visit http://localhost:8000.
 - Third-party AI names and logos appear only to show compatibility and belong to their owners.
 - The outcomes listed are design intentions. No user research or conversion data informed this redesign; the case study includes a plan to validate it.
 
-Designed by Samikshya Satpathy.
+Designed by Samikshya Satpathy. © 2026 Samikshya Satpathy. All rights reserved.
