@@ -331,8 +331,8 @@ td.num{font-variant-numeric:tabular-nums;font-family:var(--f-mono);font-size:14p
 .trade details{border-bottom:1px solid var(--line);padding:14px 0}
 .trade summary{cursor:pointer;list-style:none;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center}
 .trade summary::-webkit-details-marker{display:none}
-.trade .chev{font:500 14px var(--f-mono);color:var(--muted);transition:transform .2s}
-.trade details[open] .chev{transform:rotate(45deg)}
+.trade .chev{font:500 14px var(--f-mono);color:var(--muted);transition:transform .2s;display:inline-block;width:1em;text-align:center}
+.trade .chev::before{content:"+"}.trade details[open] .chev::before{content:"−"}
 .trade .body{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:12px}
 @media (max-width:760px){.trade .body{grid-template-columns:1fr}}
 .trade .body div{display:grid;gap:4px;align-content:start}
@@ -350,6 +350,42 @@ dialog.lb .in{max-height:90vh;overflow:auto;border-radius:10px;background:#222}
 dialog.lb .in img{margin:0 auto}
 dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));right:calc(14px + env(safe-area-inset-right,0px));font:500 12px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;background:#fff;color:#151517;border:0;border-radius:999px;padding:10px 16px;cursor:pointer}
 .zoom{cursor:zoom-in}
+
+/* 60-second summary */
+.tldr{background:var(--sheet);border:1px solid var(--line);border-radius:16px;padding:clamp(20px,3vw,32px);display:grid;gap:24px}
+.tldr-head{display:grid;gap:8px}
+.tldr-head h2{font-size:clamp(26px,3vw,36px);font-variation-settings:"wdth" 112}
+.tldr .prob{font-size:clamp(17px,1.5vw,19px);max-width:64ch;color:var(--muted)}
+.tldr .prob b{color:var(--ink);font-weight:600}
+.decisions{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
+.dec{display:grid;gap:10px;align-content:start;min-width:0}
+.dec .k{font:600 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--gold)}
+.dec p{color:var(--muted);font-size:15px}
+.ba2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ba2 figure{margin:0;position:relative;min-width:0}
+.ba2 img{border-radius:6px;border:1px solid var(--line);aspect-ratio:1.3;object-fit:cover;object-position:top left;width:100%}
+.ba2 figcaption{position:absolute;top:6px;left:6px;font:600 10px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;padding:2px 6px;border-radius:3px;background:rgba(31,31,34,.82);color:#fff}
+.ba2 figure:last-child figcaption{background:#FFE08A;color:#1F1F22}
+.dec a{font:500 12px var(--f-mono);color:var(--gold);text-decoration:none}
+.dec a:hover{text-decoration:underline}
+.results{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.results>div{background:var(--paper);padding:14px 16px;display:grid;gap:2px}
+.results b{font:800 24px/1.15 var(--f-display);font-variation-settings:"wdth" 112}
+.results span{font-size:13px;color:var(--muted)}
+/* claim labels */
+.chip.ill{background:transparent;border:1px dashed var(--muted);color:var(--muted)}
+.chip.co{background:var(--low-bg);color:var(--low)}
+.chip.tbc{background:var(--med-bg);color:var(--med)}
+.chip.legal{background:var(--high-bg);color:var(--high)}
+.chip.ver{background:transparent;border:1px solid var(--med);color:var(--med)}
+.scope{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.scope>div{border:1px solid var(--line);background:var(--sheet);border-radius:10px;padding:16px;display:grid;gap:8px;align-content:start;min-width:0}
+.scope ul{margin:0;padding-left:18px;display:grid;gap:6px;color:var(--muted);font-size:15px}
+.scope h4{display:flex;align-items:center;gap:8px}
+.scope .dotc{width:9px;height:9px;border-radius:50%;display:inline-block}
+.qtest{counter-reset:q;list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.qtest li{counter-increment:q;display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:baseline;font-size:16px}
+.qtest li::before{content:counter(q);font:600 12px var(--f-mono);width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:var(--paper)}
 </style>
 </head>
 <body>
@@ -394,12 +430,29 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
         <div><dt class="mono">Role</dt><dd>Product designer, end to end</dd></div>
         <div><dt class="mono">Deliverables</dt><dd>Desktop 1440 + mobile 390, live build</dd></div>
         <div><dt class="mono">Explored</dt><dd>4 wireframe and 5 visual directions</dd></div>
-        <div><dt class="mono">Standard</dt><dd>WCAG 2.2 AA, checked on the live page</dd></div>
+        <div><dt class="mono">Accessibility</dt><dd>Designed toward WCAG 2.2 AA; automated checks done</dd></div>
       </dl>
-      <div class="trio">
-        <div><span class="mono k">Problem</span><h3>Abstract promise, unclear product</h3><p>"Personal supercomputing, owned by you" doesn't say what Agent One does, how the three products relate, or where to start. The page ends without asking.</p></div>
-        <div><span class="mono k">Approach</span><h3>Audit, diverge, converge, build</h3><p>20 audit findings became three priorities. I explored widely with AI's help, scored every direction, and combined the strongest parts.</p></div>
-        <div><span class="mono k">Outcome</span><h3>Say what it is, then prove it</h3><p>A benefit-led hero, Agent One as the lead product, privacy shown through a comparison and a marketplace demo, one consistent call to action, 0 contrast failures.</p></div>
+      <div class="tldr" id="summary">
+        <div class="tldr-head"><span class="mono" style="color:var(--gold)">The 60-second version</span><h2>Three decisions, one clearer page</h2>
+          <p class="prob"><b>The problem:</b> hussh's homepage leads with a belief ("Personal supercomputing, owned by you") instead of the product. Visitors can't tell what Agent One does, which product to start with, or why to trust it, and the page never asks them to start.</p></div>
+        <div class="decisions">
+          <div class="dec"><span class="k">Decision 1</span><h3>Say what it is</h3>
+            <div class="ba2"><figure><img src="images/top-current.webp" alt="Current hero"><figcaption>Before</figcaption></figure><figure><img src="images/top-built.webp" alt="Redesigned hero"><figcaption>After</figcaption></figure></div>
+            <p>"Private AI that lives with you, not in the cloud." The headline names the category and the benefit; proof replaces "Sovereign intelligence."</p><a href="#final">See the hero before &amp; after →</a></div>
+          <div class="dec"><span class="k">Decision 2</span><h3>Lead with Agent One</h3>
+            <div class="ba2"><figure><img src="images/cur-products.webp" alt="Current product cards"><figcaption>Before</figcaption></figure><figure><img src="images/d-02-products.webp" alt="Redesigned product grid"><figcaption>After</figcaption></figure></div>
+            <p>The free app gets two thirds of the product grid. The hardware supports it, with the same level of care.</p><a href="#final">See the products before &amp; after →</a></div>
+          <div class="dec"><span class="k">Decision 3</span><h3>Show privacy, don't claim it</h3>
+            <div class="ba2"><figure><img src="images/cur-market.webp" alt="Current marketplace"><figcaption>Before</figcaption></figure><figure><img src="images/d-05-marketplace.webp" alt="Redesigned marketplace demo"><figcaption>After</figcaption></figure></div>
+            <p>A comparison with typical cloud AI, a marketplace demo and a closing ask replace abstract claims.</p><a href="#final">See the marketplace before &amp; after →</a></div>
+        </div>
+        <div class="results">
+          <div><b>9 → 3</b><span>CTA labels to clear intents</span></div>
+          <div><b>0 → 2</b><span>sections that show privacy</span></div>
+          <div><b>Added</b><span>a closing call to action</span></div>
+          <div><b>0</b><span>contrast failures (automated check)</span></div>
+        </div>
+        <p class="note">The rest of this page is the full process, for anyone who wants the reasoning behind each decision.</p>
       </div>
     </section>
 
@@ -714,7 +767,7 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
           <div><h4>Describe the thing</h4><p class="x">A laptop, an Apple Silicon Mac, Dell or Acer, that comes preinstalled with Agent One.</p><p class="o">A laptop or Apple Silicon Mac with Agent One preinstalled. Your information stays on your machine.</p></div>
           <div><h4>Plain words over jargon</h4><p class="x">A private cryptographic shield between you and existing frontier assistants.</p><p class="o">hussh sits between you and it as a private shield, so it gets your question, never your identity.</p></div>
           <div><h4>Say exactly what happens</h4><p class="x">No spam. Unsubscribe anytime.</p><p class="o">We only use your email to send your invite. Unsubscribe anytime.</p></div>
-          <div><h4>Numbers over adjectives</h4><p class="x">Fast, easy setup</p><p class="o">About two minutes, start to finish.</p></div>
+          <div><h4>Numbers over adjectives <span class="chip tbc">To confirm</span></h4><p class="x">Fast, easy setup</p><p class="o">About two minutes, start to finish.</p></div>
         </div>
       </div>
     </section>
@@ -744,11 +797,11 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
         </div>
         <div role="tabpanel" id="sw-3" hidden>
           <div class="swipe" style="--pos:55%"><img src="images/b-03-how-it-works.webp" width="1470" height="903" alt="Before: current how it works"><div class="after"><img src="images/d-03-how-it-works.webp" width="2400" height="1475" alt="After: redesigned how it works"></div><input type="range" min="0" max="100" value="55" aria-label="Compare how it works, before and after"><div class="handle"></div><span class="lbl a">After</span><span class="lbl b">Before</span></div>
-          <div class="swipe-notes"><div><span class="mono">Before</span><p>Three steps, two look disabled, the visual stops at sign-in.</p></div><div><span class="mono">After</span><p>Four steps ending on the morning brief, a two-minute time promise, and a phone that shows the privacy promises.</p></div></div>
+          <div class="swipe-notes"><div><span class="mono">Before</span><p>Three steps, two look disabled, the visual stops at sign-in.</p></div><div><span class="mono">After</span><p>Four steps ending on the morning brief, a two-minute time promise, and a phone that shows the privacy promises. <span class="chip tbc">Setup time to confirm</span></p></div></div>
         </div>
         <div role="tabpanel" id="sw-5" hidden>
           <div class="swipe" style="--pos:55%"><img src="images/b-05-marketplace.webp" width="1470" height="1262" alt="Before: current marketplace"><div class="after"><img src="images/d-05-marketplace.webp" width="2400" height="2060" alt="After: redesigned marketplace"></div><input type="range" min="0" max="100" value="55" aria-label="Compare marketplace, before and after"><div class="handle"></div><span class="lbl a">After</span><span class="lbl b">Before</span></div>
-          <div class="swipe-notes"><div><span class="mono">Before</span><p>Four short claims, centered, ending in "Open your profile."</p></div><div><span class="mono">After</span><p>Four cards that show each step: what's shared, a $12 floor price, a request to approve, and earnings with a 0% fee.</p></div></div>
+          <div class="swipe-notes"><div><span class="mono">Before</span><p>Four short claims, centered, ending in "Open your profile."</p></div><div><span class="mono">After</span><p>Four cards that show each step: what's shared, a $12 floor price, a request to approve, and earnings with a 0% fee. <span class="chip ill">Illustrative figures</span></p></div></div>
         </div>
         <div role="tabpanel" id="sw-6" hidden>
           <div class="swipe" style="--pos:55%"><img src="images/b-06-ai-rings.webp" width="1470" height="1287" alt="Before: current AI ecosystem band"><div class="after"><img src="images/d-06-ai-rings.webp" width="2400" height="2102" alt="After: four rings diagram"></div><input type="range" min="0" max="100" value="55" aria-label="Compare AI ecosystem, before and after"><div class="handle"></div><span class="lbl a">After</span><span class="lbl b">Before</span></div>
@@ -778,7 +831,7 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
           <div class="pinwrap"><img class="zoom" src="images/d-04-comparison.webp" width="2400" height="1327" alt="hussh vs typical cloud AI comparison table">
             <button class="pin good" style="--x:60%;--y:20%" data-f="f">F</button><button class="pin good" style="--x:48%;--y:62%" data-f="g">G</button></div>
           <div><h3>Comparison (new)</h3><ul class="findings">
-            <li data-f="f"><span class="n good">F</span><div><h4>Privacy as six checkable rows</h4><p>Where data lives, who reads it, training, ads, selling, price. A visitor can check each claim against what they know.</p></div></li>
+            <li data-f="f"><span class="n good">F</span><div><h4>Privacy as six checkable rows <span class="chip legal">Needs legal review</span></h4><p>Where data lives, who reads it, training, ads, selling, price. A visitor can check each claim against what they know.</p></div></li>
             <li data-f="g"><span class="n good">G</span><div><h4>Never icon or color alone</h4><p>Every ✓ and ✕ carries the word "Yes" or "No", so the meaning survives for color-blind and screen-reader users.</p></div></li>
           </ul></div>
         </div>
@@ -787,10 +840,34 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
             <button class="pin good" style="--x:55%;--y:50%" data-f="h">H</button><button class="pin good" style="--x:92%;--y:41%" data-f="i">I</button><button class="pin good" style="--x:42%;--y:72%" data-f="j">J</button><button class="pin good" style="--x:47%;--y:90%" data-f="k">K</button></div>
           <div><h3>Marketplace</h3><ul class="findings">
             <li data-f="h"><span class="n good">H</span><div><h4>What's never shared is shown too</h4><p>"Messages and name: Never shared" answers the scary question before it's asked.</p></div></li>
-            <li data-f="i"><span class="n good">I</span><div><h4>A price you can picture</h4><p>$12 per request on a $1–$40 scale makes the idea concrete. Fixes 14.</p></div></li>
-            <li data-f="j"><span class="n good">J</span><div><h4>Nothing moves without a yes</h4><p>A named request with Decline and Approve shows control instead of claiming it.</p></div></li>
+            <li data-f="i"><span class="n good">I</span><div><h4>A price you can picture <span class="chip ill">Illustrative</span></h4><p>$12 per request on a $1–$40 scale makes the idea concrete. Fixes 14.</p></div></li>
+            <li data-f="j"><span class="n good">J</span><div><h4>Nothing moves without a yes <span class="chip ill">Illustrative</span></h4><p>A named request with Decline and Approve shows control instead of claiming it.</p></div></li>
             <li data-f="k"><span class="n good">K</span><div><h4>Honest about status</h4><p>"The Information Marketplace is in preview," with one clear next step. Fixes 13.</p></div></li>
           </ul></div>
+        </div>
+      </div>
+
+      <div class="sub">
+        <header><span class="mono">Claims &amp; data</span><h3>What's confirmed, what's proposed, what's illustrative</h3><p>So no one mistakes a design example for a product fact.</p></header>
+        <div class="tbl"><table>
+          <thead><tr><th>Claim on the page</th><th>Where it comes from</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Free for life</td><td>Stated on the current hussh homepage</td><td><span class="chip co">Company-stated</span></td></tr>
+            <tr><td>100% on-device · Encrypted</td><td>Stated on the current hussh homepage</td><td><span class="chip co">Company-stated</span></td></tr>
+            <tr><td>Set your price · Keep 100% of what you earn</td><td>Current marketplace section</td><td><span class="chip co">Company-stated</span></td></tr>
+            <tr><td>About two minutes to set up</td><td>Proposed UX copy</td><td><span class="chip tbc">To confirm</span></td></tr>
+            <tr><td>$12 floor, $15 offer, $57 earned, "Northwind Research"</td><td>Marketplace demo</td><td><span class="chip ill">Illustrative</span></td></tr>
+            <tr><td>Cloud AI trains on your life, shows ads based on it</td><td>Comparison table</td><td><span class="chip legal">Needs legal review</span></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div class="sub">
+        <header><span class="mono">Prototype scope</span><h3>What works in the live prototype</h3></header>
+        <div class="scope">
+          <div><h4><span class="dotc" style="background:var(--low)"></span>Works</h4><ul><li>Page navigation and menus</li><li>"How it works" step tour, with step tabs and a pause button</li><li>Selecting the four rings</li><li>Responsive layout, desktop to mobile</li></ul></div>
+          <div><h4><span class="dotc" style="background:var(--med)"></span>Mockups only</h4><ul><li>Email sign-up forms: nothing is submitted</li><li>"Get Agent One" and "Explore" buttons: no download or purchase</li><li>Footer links: they don't go anywhere</li></ul></div>
+          <div><h4><span class="dotc" style="background:var(--muted)"></span>Illustrations</h4><ul><li>Marketplace toggles, price slider and Approve/Decline show how the feature would work; they aren't interactive</li></ul></div></div>
         </div>
       </div>
 
@@ -853,8 +930,8 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
     <section class="file" id="a11y">
       <div class="file-head">
         <div class="file-tag mono"><b>10</b> Accessibility</div>
-        <h2>Built to WCAG 2.2 AA, and checked on the live page</h2>
-        <p class="lede">I didn't stop at a contrast checker on the mockup. I ran checks against the live prototype's real markup and computed styles. What still needs a human test is listed at the end.</p>
+        <h2>Designed toward WCAG 2.2 AA</h2>
+        <p class="lede">Automated checks on the live build are complete; manual keyboard and screen-reader validation is pending. I ran the checks against the prototype's real markup and computed styles, not the mockups. What still needs a human test is listed at the end.</p>
       </div>
       <div class="score">
         <div><b>0</b><span>contrast failures across 191 text elements</span></div>
@@ -958,10 +1035,10 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
         <h2>What I gave up, and how I'd test it</h2>
       </div>
       <div class="trade">
-        <details open><summary><h4>A light page for a brand known for dark</h4><span class="chev">+</span></summary><div class="body"><div><span class="mono">Gained</span><p>Approachability; the pastel product art finally sits on a ground that suits it.</p></div><div><span class="mono">Lost</span><p>Some of the current site's premium mystery.</p></div><div><span class="mono">Mitigation</span><p>Dark nav, comparison band and closing CTA keep the brand's tone. Worth an A/B test.</p></div></div></details>
-        <details><summary><h4>Agent One first, hardware second</h4><span class="chev">+</span></summary><div class="body"><div><span class="mono">Gained</span><p>One obvious, free starting point.</p></div><div><span class="mono">Lost</span><p>Less shelf space for Puppy One.</p></div><div><span class="mono">Mitigation</span><p>Hardware is in the hero doors and has its own render and link.</p></div></div></details>
-        <details><summary><h4>Cutting the FAQ</h4><span class="chev">+</span></summary><div class="body"><div><span class="mono">Gained</span><p>A shorter page; the comparison answers the main doubts.</p></div><div><span class="mono">Lost</span><p>Direct answers to "What if I lose my phone?"</p></div><div><span class="mono">Mitigation</span><p>If testing surfaces these questions, the FAQ from Direction C slots in above the close.</p></div></div></details>
-        <details><summary><h4>Naming "typical cloud AI"</h4><span class="chev">+</span></summary><div class="body"><div><span class="mono">Gained</span><p>Privacy made concrete.</p></div><div><span class="mono">Lost</span><p>Nuance; not every cloud AI trains on data or shows ads.</p></div><div><span class="mono">Mitigation</span><p>Legal review of each row before launch.</p></div></div></details>
+        <details open><summary><h4>A light page for a brand known for dark</h4><span class="chev" aria-hidden="true"></span></summary><div class="body"><div><span class="mono">Gained</span><p>Approachability; the pastel product art finally sits on a ground that suits it.</p></div><div><span class="mono">Lost</span><p>Some of the current site's premium mystery.</p></div><div><span class="mono">Mitigation</span><p>Dark nav, comparison band and closing CTA keep the brand's tone. Worth an A/B test.</p></div></div></details>
+        <details><summary><h4>Agent One first, hardware second</h4><span class="chev" aria-hidden="true"></span></summary><div class="body"><div><span class="mono">Gained</span><p>One obvious, free starting point.</p></div><div><span class="mono">Lost</span><p>Less shelf space for Puppy One.</p></div><div><span class="mono">Mitigation</span><p>Hardware is in the hero doors and has its own render and link.</p></div></div></details>
+        <details><summary><h4>Cutting the FAQ</h4><span class="chev" aria-hidden="true"></span></summary><div class="body"><div><span class="mono">Gained</span><p>A shorter page; the comparison answers the main doubts.</p></div><div><span class="mono">Lost</span><p>Direct answers to "What if I lose my phone?"</p></div><div><span class="mono">Mitigation</span><p>If testing surfaces these questions, the FAQ from Direction C slots in above the close.</p></div></div></details>
+        <details><summary><h4>Naming "typical cloud AI"</h4><span class="chev" aria-hidden="true"></span></summary><div class="body"><div><span class="mono">Gained</span><p>Privacy made concrete.</p></div><div><span class="mono">Lost</span><p>Nuance; not every cloud AI trains on data or shows ads.</p></div><div><span class="mono">Mitigation</span><p>Legal review of each row before launch.</p></div></div></details>
       </div>
       <div class="sub">
         <header><span class="mono">Validation plan</span><p>No user research informed this redesign, so its outcomes are hypotheses.</p></header>
@@ -976,6 +1053,11 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
         </table></div>
       </div>
       <div class="sub">
+        <header><span class="mono">Next step, within a day</span><h3>A first-impression test with 3–5 people</h3><p>Show the new hero for five seconds, then the full page, and ask:</p></header>
+        <ol class="qtest"><li>What does this company offer?</li><li>What does Agent One do for you?</li><li>Where would you click first?</li></ol>
+        <p class="note">I'd report what people said as observations, not conclusions; five people can surface problems but can't prove the page converts better.</p>
+      </div>
+      <div class="sub">
         <header><span class="mono">Reflection</span></header>
         <div class="rules3">
           <div><h4>The best direction wasn't one direction</h4><p>Tour won alone, but each other direction solved one problem better. Diverging on structure first made the parts easy to combine.</p></div>
@@ -988,7 +1070,8 @@ dialog.lb button{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));ri
         <h3>A page that tells first-time visitors what hussh does, <mark>shows</mark> them why to trust it, and asks them once, clearly, to start.</h3>
         <a class="btn" href="https://hussh-prototype-vercel.vercel.app/" target="_blank" rel="noopener">Open the live prototype ↗</a>
       </div>
-      <div class="foot"><span>© 2026 Samikshya Satpathy. All rights reserved.</span><span>hussh, its product names, mascot and imagery belong to hussh. This is an independent design assessment.</span></div>    </section>
+      <div class="foot"><span>© 2026 Samikshya Satpathy. All rights reserved.</span><span>hussh, its product names, mascot and imagery belong to hussh. This is an independent design assessment.</span></div>
+    </section>
   </main>
 </div>
 
